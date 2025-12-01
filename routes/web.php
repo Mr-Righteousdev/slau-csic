@@ -26,10 +26,15 @@ Route::get('/contact', function () {
     return view('frontend.contact', ['title' => 'Contact Us - Cybersecurity & Innovations Club']);
 })->name('contact');
 
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
 // ============================================
 // ADMIN ROUTES - Dashboard & Management
 // ============================================
-Route::prefix('admin')->group(function () {
+Route::middleware(['auth', 'permission:access_admin_panel'])->prefix('admin')->group(function () {
     // dashboard pages
     Route::get('/', function () {
         return view('pages.dashboard.ecommerce', ['title' => 'E-commerce Dashboard']);

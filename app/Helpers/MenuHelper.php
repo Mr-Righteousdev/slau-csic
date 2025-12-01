@@ -6,44 +6,116 @@ class MenuHelper
 {
     public static function getMainNavItems()
     {
+        /*
+        // Original path-based menu config (kept for reference)
         return [
             [
                 'icon' => 'dashboard',
                 'name' => 'Dashboard',
                 'subItems' => [
-                    ['name' => 'Ecommerce', 'path' => '/'],
+                    ['name' => 'Ecommerce', 'path' => '/admin'],
                 ],
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Calendar',
-                'path' => '/calendar',
+                'path' => '/admin/calendar',
             ],
             [
                 'icon' => 'user-profile',
                 'name' => 'User Profile',
-                'path' => '/profile',
+                'path' => '/admin/profile',
             ],
             [
                 'name' => 'Forms',
                 'icon' => 'forms',
                 'subItems' => [
-                    ['name' => 'Form Elements', 'path' => '/form-elements', 'pro' => false],
+                    ['name' => 'Form Elements', 'path' => '/admin/form-elements', 'pro' => false],
                 ],
             ],
             [
                 'name' => 'Tables',
                 'icon' => 'tables',
                 'subItems' => [
-                    ['name' => 'Basic Tables', 'path' => '/basic-tables', 'pro' => false]
+                    ['name' => 'Basic Tables', 'path' => '/admin/basic-tables', 'pro' => false]
                 ],
             ],
             [
                 'name' => 'Pages',
                 'icon' => 'pages',
                 'subItems' => [
-                    ['name' => 'Blank Page', 'path' => '/blank', 'pro' => false],
-                    ['name' => '404 Error', 'path' => '/error-404', 'pro' => false]
+                    ['name' => 'Blank Page', 'path' => '/admin/blank', 'pro' => false],
+                    ['name' => '404 Error', 'path' => '/admin/error-404', 'pro' => false]
+                ],
+            ],
+        ];
+        */
+
+        // Route-based menu config (uses named routes but keeps paths for JS-based active state)
+        return [
+            [
+                'icon' => 'dashboard',
+                'name' => 'Dashboard',
+                'subItems' => [
+                    [
+                        'name' => 'Ecommerce',
+                        'route' => 'admin.dashboard',
+                        'path' => '/admin',
+                    ],
+                ],
+            ],
+            [
+                'icon' => 'calendar',
+                'name' => 'Calendar',
+                'route' => 'admin.calendar',
+                'path' => '/admin/calendar',
+            ],
+            [
+                'icon' => 'user-profile',
+                'name' => 'User Profile',
+                'route' => 'admin.profile',
+                'path' => '/admin/profile',
+            ],
+            [
+                'name' => 'Forms',
+                'icon' => 'forms',
+                'subItems' => [
+                    [
+                        'name' => 'Form Elements',
+                        'route' => 'admin.form-elements',
+                        'path' => '/admin/form-elements',
+                        'pro' => false,
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Tables',
+                'icon' => 'tables',
+                'subItems' => [
+                    [
+                        'name' => 'Basic Tables',
+                        'route' => 'admin.basic-tables',
+                        'path' => '/admin/basic-tables',
+                        'pro' => false,
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Pages',
+                'icon' => 'pages',
+                'subItems' => [
+                    [
+                        'name' => 'Blank Page',
+                        'route' => 'admin.blank',
+                        'path' => '/admin/blank',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => '404 Error',
+                        'route' => 'admin.error-404',
+                        'path' => '/admin/error-404',
+                        'pro' => false,
+                    ],
                 ],
             ],
         ];
@@ -51,13 +123,15 @@ class MenuHelper
 
     public static function getOthersItems()
     {
+        /*
+        // Original path-based menu config (kept for reference)
         return [
             [
                 'icon' => 'charts',
                 'name' => 'Charts',
                 'subItems' => [
-                    ['name' => 'Line Chart', 'path' => '/line-chart', 'pro' => false],
-                    ['name' => 'Bar Chart', 'path' => '/bar-chart', 'pro' => false]
+                    ['name' => 'Line Chart', 'path' => '/admin/line-chart', 'pro' => false],
+                    ['name' => 'Bar Chart', 'path' => '/admin/bar-chart', 'pro' => false]
                 ],
             ],
             [
@@ -78,6 +152,89 @@ class MenuHelper
                 'subItems' => [
                     ['name' => 'Sign In', 'path' => '/signin', 'pro' => false],
                     ['name' => 'Sign Up', 'path' => '/signup', 'pro' => false],
+                ],
+            ],
+        ];
+        */
+
+        // Route-based menu config (uses named routes but keeps paths for JS-based active state)
+        return [
+            [
+                'icon' => 'charts',
+                'name' => 'Charts',
+                'subItems' => [
+                    [
+                        'name' => 'Line Chart',
+                        'route' => 'admin.line-chart',
+                        'path' => '/admin/line-chart',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Bar Chart',
+                        'route' => 'admin.bar-chart',
+                        'path' => '/admin/bar-chart',
+                        'pro' => false,
+                    ],
+                ],
+            ],
+            [
+                'icon' => 'ui-elements',
+                'name' => 'UI Elements',
+                'subItems' => [
+                    [
+                        'name' => 'Alerts',
+                        'route' => 'admin.alerts',
+                        'path' => '/admin/alerts',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Avatar',
+                        'route' => 'admin.avatars',
+                        'path' => '/admin/avatars',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Badge',
+                        'route' => 'admin.badges',
+                        'path' => '/admin/badge',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Buttons',
+                        'route' => 'admin.buttons',
+                        'path' => '/admin/buttons',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Images',
+                        'route' => 'admin.images',
+                        'path' => '/admin/image',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Videos',
+                        'route' => 'admin.videos',
+                        'path' => '/admin/videos',
+                        'pro' => false,
+                    ],
+                ],
+            ],
+            [
+                'icon' => 'authentication',
+                'name' => 'Authentication',
+                'subItems' => [
+                    [
+                        'name' => 'Sign In',
+                        'route' => 'signin',
+                        'path' => '/signin',
+                        'pro' => false,
+                    ],
+                    [
+                        'name' => 'Sign Up',
+                        'route' => 'signup',
+                        'path' => '/signup',
+                        'pro' => false,
+                    ],
                 ],
             ],
         ];

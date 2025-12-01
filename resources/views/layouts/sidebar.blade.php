@@ -148,16 +148,21 @@
                                         <div x-show="isSubmenuOpen({{ $groupIndex }}, {{ $itemIndex }}) && ($store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen)">
                                             <ul class="mt-2 space-y-1 ml-9">
                                                 @foreach ($item['subItems'] as $subItem)
+                                                    @php
+                                                        // Prefer named routes for URLs; fall back to explicit paths if needed
+                                                        $subItemPath = $subItem['path'] ?? (isset($subItem['route']) ? route($subItem['route'], [], false) : '#');
+                                                        $subItemUrl = isset($subItem['route']) ? route($subItem['route']) : $subItemPath;
+                                                    @endphp
                                                     <li>
-                                                        <a href="{{ $subItem['path'] }}" class="menu-dropdown-item"
-                                                            :class="isActive('{{ $subItem['path'] }}') ?
+                                                        <a href="{{ $subItemUrl }}" class="menu-dropdown-item"
+                                                            :class="isActive('{{ $subItemPath }}') ?
                                                                 'menu-dropdown-item-active' :
                                                                 'menu-dropdown-item-inactive'">
                                                             {{ $subItem['name'] }}
                                                             <span class="flex items-center gap-1 ml-auto">
                                                                 @if (!empty($subItem['new']))
                                                                     <span
-                                                                        :class="isActive('{{ $subItem['path'] }}') ?
+                                                                        :class="isActive('{{ $subItemPath }}') ?
                                                                             'menu-dropdown-badge menu-dropdown-badge-active' :
                                                                             'menu-dropdown-badge menu-dropdown-badge-inactive'">
                                                                         new
@@ -165,7 +170,7 @@
                                                                 @endif
                                                                 @if (!empty($subItem['pro']))
                                                                     <span
-                                                                        :class="isActive('{{ $subItem['path'] }}') ?
+                                                                        :class="isActive('{{ $subItemPath }}') ?
                                                                             'menu-dropdown-badge-pro menu-dropdown-badge-pro-active' :
                                                                             'menu-dropdown-badge-pro menu-dropdown-badge-pro-inactive'">
                                                                         pro
@@ -179,9 +184,14 @@
                                         </div>
                                     @else
                                         <!-- Simple Menu Item -->
-                                        <a href="{{ $item['path'] }}" class="menu-item group"
+                                        @php
+                                            // Prefer named routes for URLs; fall back to explicit paths if needed
+                                            $itemPath = $item['path'] ?? (isset($item['route']) ? route($item['route'], [], false) : '#');
+                                            $itemUrl = isset($item['route']) ? route($item['route']) : $itemPath;
+                                        @endphp
+                                        <a href="{{ $itemUrl }}" class="menu-item group"
                                             :class="[
-                                                isActive('{{ $item['path'] }}') ? 'menu-item-active' :
+                                                isActive('{{ $itemPath }}') ? 'menu-item-active' :
                                                 'menu-item-inactive',
                                                 (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
                                                 'xl:justify-center' :
@@ -190,7 +200,7 @@
 
                                             <!-- Icon -->
                                             <span
-                                                :class="isActive('{{ $item['path'] }}') ? 'menu-item-icon-active' :
+                                                :class="isActive('{{ $itemPath }}') ? 'menu-item-icon-active' :
                                                     'menu-item-icon-inactive'">
                                                 {!! MenuHelper::getIconSvg($item['icon']) !!}
                                             </span>
