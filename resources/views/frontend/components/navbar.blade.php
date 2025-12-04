@@ -34,8 +34,8 @@
             </div>
 
             <div class="hidden md:flex items-center gap-3">
-                <a href="{{ route('signin') }}" class="text-sm text-gray-300 hover:text-emerald-400">Sign in</a>
-                <a href="{{ route('signup') }}" class="cyber-button text-sm px-4 py-2">Join the Club</a>
+                <a href="{{ route('login') }}" class="text-sm text-gray-300 hover:text-emerald-400">Sign in</a>
+                <a href="{{ route('register') }}" class="cyber-button text-sm px-4 py-2">Join the Club</a>
             </div>
 
             {{-- Mobile menu button --}}
@@ -63,8 +63,8 @@
                         @endforeach
 
                         <div class="pt-2 border-t border-gray-800 flex items-center justify-between">
-                            <a href="{{ route('signin') }}" class="text-sm text-gray-300 hover:text-emerald-400">Sign in</a>
-                            <a href="{{ route('signup') }}" class="cyber-button text-xs px-3 py-1.5">Join the Club</a>
+                            <a href="{{ route('login') }}" class="text-sm text-gray-300 hover:text-emerald-400">Sign in</a>
+                            <a href="{{ route('register') }}" class="cyber-button text-xs px-3 py-1.5">Join the Club</a>
                         </div>
                     </div>
                 </div>

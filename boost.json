@@ -1,0 +1,17 @@
+{
+    "agents": [
+        "claude_code",
+        "copilot",
+        "cursor",
+        "gemini",
+        "opencode"
+    ],
+    "editors": [
+        "claude_code",
+        "cursor",
+        "gemini",
+        "opencode",
+        "vscode"
+    ],
+    "guidelines": []
+}

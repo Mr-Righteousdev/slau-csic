@@ -57,7 +57,7 @@
                     <p class="text-xs text-gray-300">Check our events or contact the team—we're always onboarding new members at the start and middle of each semester.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('signup') }}" class="cyber-button text-xs sm:text-sm">Sign up</a>
+                    <a href="{{ route('register') }}" class="cyber-button text-xs sm:text-sm">Sign up</a>
                     <a href="{{ route('events') }}" class="text-xs sm:text-sm font-medium text-emerald-300 hover:text-emerald-200">View events</a>
                 </div>
             </section>

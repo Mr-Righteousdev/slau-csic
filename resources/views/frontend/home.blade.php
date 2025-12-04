@@ -27,7 +27,7 @@
                     </p>
 
                     <div class="flex flex-wrap items-center gap-4">
-                        <a href="{{ route('signup') }}" class="cyber-button flex items-center gap-2">
+                        <a href="{{ route('register') }}" class="cyber-button flex items-center gap-2">
                             <span>Join the Club</span>
                             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 5l7 7-7 7" />
@@ -174,7 +174,7 @@
                     <p class="text-sm text-gray-300 max-w-xl">Come to our next meeting or sign up online—whether you're a beginner or already hacking on your own, there's a place for you here.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('signup') }}" class="cyber-button text-sm">Become a member</a>
+                    <a href="{{ route('register') }}" class="cyber-button text-sm">Become a member</a>
                     <a href="{{ route('contact') }}" class="text-xs sm:text-sm font-medium text-gray-200 hover:text-emerald-400">Contact the organizers</a>
                 </div>
             </div>

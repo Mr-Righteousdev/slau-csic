@@ -8,6 +8,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('pages.dashboard');
+        // return a route to the admin dashboard view
+        return route('admin.dashboard', absolute: false);
     }
 }
