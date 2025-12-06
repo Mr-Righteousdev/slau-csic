@@ -7,12 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>
-
+    @livewireStyles
+    @filamentStyles
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Alpine.js -->
-    {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
 
     <!-- Theme Store -->
     <script>
@@ -109,6 +108,9 @@ window.addEventListener('resize', checkMobile);">
     {{-- preloader end --}}
 
     @yield('content')
+    
+    @livewireScripts
+    @filamentScripts
 
 </body>
 

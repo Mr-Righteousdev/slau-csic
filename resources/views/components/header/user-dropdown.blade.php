@@ -13,8 +13,31 @@
         @click.prevent="toggleDropdown()"
         type="button"
     >
+    {{-- @dd(Auth::user()->profile_photo) --}}
         <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-            <img src="/images/user/owner.png" alt="User" />
+            @php
+                $user = Auth::user();
+
+                // Method 1: Direct Storage URL (most common)
+                $profilePhotoUrl = $user->profile_photo
+                    ? Storage::url($user->profile_photo)
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&color=FFFFFF&background=6366f1';
+
+                // Method 2: If the above doesn't work, try asset()
+                // $profilePhotoUrl = $user->profile_photo
+                //     ? asset('storage/' . $user->profile_photo)
+                //     : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&color=FFFFFF&background=6366f1';
+
+                // For debugging - uncomment to see what URL is generated
+                // dd($user->profile_photo, $profilePhotoUrl, Storage::url($user->profile_photo));
+            @endphp
+
+            <img
+                src="{{ $profilePhotoUrl }}"
+                alt="{{ $user->name }}"
+                class="object-cover w-full h-full"
+                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&color=FFFFFF&background=6366f1';"
+            />
         </span>
 
        <span class="block mr-1 font-medium text-theme-sm">{{ Auth::user()->name }}</span>
@@ -108,10 +131,10 @@
         </ul>
 
         <!-- Sign Out -->
-        {{-- <form method="POST" action="#">
-            @csrf --}}
-            <a
-                href="/signin"
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button
+                type="submit"
                 class="flex items-center w-full gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                 @click="closeDropdown()"
             >
@@ -121,8 +144,8 @@
                     </svg>
                 </span>
                 Sign out
-            </a>
-        {{-- </form> --}}
+            </button>
+        </form>
     </div>
     <!-- Dropdown End -->
 </div>

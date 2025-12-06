@@ -8,11 +8,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use Carbon\Carbon;
+use Lab404\Impersonate\Models\Impersonate;
+use Illuminate\Support\Facades\Storage;
+
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -62,6 +66,17 @@ class User extends Authenticatable
         'joined_at' => 'date',
         'is_discord_member' => 'boolean',
     ];
+    }
+
+     public function canImpersonate()
+    {
+        // For example
+        return $this->hasRole('super-admin');
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return ! $this->hasRole('super-admin');
     }
 
     public function meetings()
@@ -180,7 +195,7 @@ class User extends Authenticatable
     public function getAttendanceRate(): float
     {
         $totalMeetings = Meeting::where('scheduled_at', '<=', now())
-            ->where('created_at', '>=', $this->joined_at)
+            ->where('created_at', '>=', Carbon::parse($this->joined_at))
             ->count();
 
         if ($totalMeetings === 0) {
@@ -228,6 +243,36 @@ class User extends Authenticatable
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+    }
+
+    // In User model
+    public function getAvatarUrlAttribute()
+    {
+        // If user has a custom profile photo
+        if ($this->profile_photo) {
+            // Check if it's a full URL
+            if (filter_var($this->profile_photo, FILTER_VALIDATE_URL)) {
+                return $this->profile_photo;
+            }
+
+            // Check if it's in storage
+            if (Storage::exists('public/' . $this->profile_photo)) {
+                return Storage::url($this->profile_photo);
+            }
+
+            // Check if it's in public storage
+            if (file_exists(public_path('storage/' . $this->profile_photo))) {
+                return asset('storage/' . $this->profile_photo);
+            }
+        }
+
+        // Fallback to generated avatar
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=FFFFFF&background=6366f1&bold=true';
+    }
+
+    public function getAvatarInitialsAttribute()
+    {
+        return strtoupper(substr($this->name, 0, 2));
     }
 
     // ============================================

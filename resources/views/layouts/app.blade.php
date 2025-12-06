@@ -5,17 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     @livewireStyles
+    @filamentStyles
     <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Alpine.js -->
-    {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
 
     <!-- Theme Store -->
     <script>
@@ -84,12 +81,29 @@
             const savedTheme = localStorage.getItem('theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             const theme = savedTheme || systemTheme;
+
+            // Apply to <html> immediately (always available)
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
-                document.body.classList.add('dark', 'bg-gray-900');
             } else {
                 document.documentElement.classList.remove('dark');
-                document.body.classList.remove('dark', 'bg-gray-900');
+            }
+
+            // Apply body classes once <body> exists
+            const applyBodyTheme = () => {
+                if (!document.body) return;
+
+                if (theme === 'dark') {
+                    document.body.classList.add('dark', 'bg-gray-900');
+                } else {
+                    document.body.classList.remove('dark', 'bg-gray-900');
+                }
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyBodyTheme);
+            } else {
+                applyBodyTheme();
             }
         })();
     </script>
@@ -129,13 +143,16 @@
             <!-- app header end -->
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                 @yield('content')
+                {{ $slot }}
             </div>
         </div>
 
     </div>
-
+    @livewireScripts
+    @filamentScripts
+    @livewire('notifications')
+    @stack('scripts')
 </body>
-@livewireScripts
-@stack('scripts')
+
 
 </html>

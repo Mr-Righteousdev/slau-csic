@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap') layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap') layer(base);
 @import 'prismjs/themes/prism.min.css';
 @import 'tailwindcss';
 
@@ -7,12 +7,14 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-*: initial;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-outfit: Outfit, sans-serif;
+  --font-sans: sans-serif;
+  --font-serif: sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -165,7 +167,36 @@
   --z-index-9999: 9999;
   --z-index-99999: 99999;
   --z-index-999999: 999999;
+  --z-index-9999999: 9999999;
 }
+
+
+/* Required by all components */
+@import '../../vendor/filament/support/resources/css/index.css';
+
+/* Required by actions and tables */
+@import '../../vendor/filament/actions/resources/css/index.css';
+
+/* Required by actions, forms and tables */
+@import '../../vendor/filament/forms/resources/css/index.css';
+
+/* Required by actions and infolists */
+@import '../../vendor/filament/infolists/resources/css/index.css';
+
+/* Required by notifications */
+@import '../../vendor/filament/notifications/resources/css/index.css';
+
+/* Required by actions, infolists, forms, schemas and tables */
+@import '../../vendor/filament/schemas/resources/css/index.css';
+
+/* Required by tables */
+@import '../../vendor/filament/tables/resources/css/index.css';
+
+/* Required by widgets */
+@import '../../vendor/filament/widgets/resources/css/index.css';
+
+@variant dark (&:where(.dark, .dark *));
+
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -310,6 +341,19 @@
     display: none;
     -webkit-appearance: none;
   }
+}
+
+/* Force higher z-index for Filament modals */
+.fi-modal-window-ctn {
+    z-index: 9999998 !important;
+}
+
+.fi-modal-close-overlay {
+    z-index: 9999997 !important;
+}
+
+.fi-slide-over {
+    z-index: 9999999 !important;
 }
 
 .sidebar:hover {

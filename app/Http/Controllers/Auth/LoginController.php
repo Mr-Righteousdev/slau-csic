@@ -16,7 +16,7 @@ class LoginController extends Controller
 {
     public function create(): View
     {
-        return view('pages.auth.signin');
+        return view('pages.auth.login');
     }
 
     public function store(Request $request): RedirectResponse
@@ -40,7 +40,8 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse
