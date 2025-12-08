@@ -3,50 +3,46 @@
 namespace App\Livewire\Super;
 
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Filament\Actions\CreateAction;
-use Filament\Forms\Components\Select;
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\ViewAction;
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkAction;
-use App\Models\ActivityLog;
-use Filament\Forms\Components\DatePicker;
+use Livewire\Component;
 use Spatie\Permission\Models\Role;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Checkbox;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Schemas\Schema;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Table;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\TernaryFilter;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Notifications\Notification;
 
-class ManageUsers extends Component implements HasForms, HasTable, HasActions
+class ManageUsers extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
-    use InteractsWithActions;
 
     public function table(Table $table): Table
     {
@@ -57,7 +53,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                 ImageColumn::make('profile_photo')
                     ->label('')
                     ->circular()
-                    ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&color=FFFFFF&background=6366f1'),
+                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&color=FFFFFF&background=6366f1'),
 
                 TextColumn::make('name')
                     ->searchable()
@@ -76,30 +72,30 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
 
                 TextColumn::make('membership_type')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'associate' => 'warning',
                         'alumni' => 'gray',
                         default => 'secondary',
                     })
-                    ->formatStateUsing(fn($state) => ucfirst($state))
+                    ->formatStateUsing(fn ($state) => ucfirst($state))
                     ->sortable(),
 
                 TextColumn::make('membership_status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'pending' => 'warning',
                         'suspended' => 'danger',
                         'inactive' => 'gray',
                         default => 'secondary',
                     })
-                    ->formatStateUsing(fn($state) => ucfirst($state))
+                    ->formatStateUsing(fn ($state) => ucfirst($state))
                     ->sortable(),
 
                 TextColumn::make('roles.name')
                     ->label('Roles')
-                    ->formatStateUsing(fn($state): string => str_replace('_', ' ', ucfirst($state)))
+                    ->formatStateUsing(fn ($state): string => str_replace('_', ' ', ucfirst($state)))
                     ->badge()
                     ->color('primary')
                     ->separator(','),
@@ -112,7 +108,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                     ->label('Program')
                     ->sortable()
                     ->limit(20)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
 
                 IconColumn::make('is_discord_member')
                     ->label('Discord')
@@ -129,13 +125,13 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                     ->label('Attendance')
                     ->numeric()
                     ->sortable()
-                    ->description(fn($record) => $record->getAttendanceRate() . '% rate'),
+                    ->description(fn ($record) => $record->getAttendanceRate().'% rate'),
 
                 TextColumn::make('meetings_this_semester')
                     ->label('Semester')
-                    ->getStateUsing(fn($record) => $record->meetingsThisSemester())
-                    ->description(fn($record) => $record->isActiveThisSemester() ? 'Active' : 'Inactive')
-                    ->color(fn($record) => $record->isActiveThisSemester() ? 'success' : 'warning'),
+                    ->getStateUsing(fn ($record) => $record->meetingsThisSemester())
+                    ->description(fn ($record) => $record->isActiveThisSemester() ? 'Active' : 'Inactive')
+                    ->color(fn ($record) => $record->isActiveThisSemester() ? 'success' : 'warning'),
             ])
             ->filters([
                 SelectFilter::make('membership_type')
@@ -189,25 +185,25 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                         return $query
                             ->when(
                                 $data['joined_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('joined_at', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('joined_at', '>=', $date),
                             )
                             ->when(
                                 $data['joined_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('joined_at', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('joined_at', '<=', $date),
                             );
                     }),
 
                 Filter::make('executive_board')
                     ->label('Executive Board')
-                    ->query(fn(Builder $query): Builder => $query->executiveBoard()),
+                    ->query(fn (Builder $query): Builder => $query->executiveBoard()),
 
                 Filter::make('active_this_semester')
                     ->label('Active This Semester')
-                    ->query(fn(Builder $query): Builder => $query->whereHas('attendance', function ($q) {
+                    ->query(fn (Builder $query): Builder => $query->whereHas('attendance', function ($q) {
                         $semesterStart = now()->month >= 9
                             ? now()->setMonth(9)->startOfMonth()
                             : now()->setMonth(2)->startOfMonth();
-                        $q->whereHas('meeting', fn($q) => $q->where('scheduled_at', '>=', $semesterStart));
+                        $q->whereHas('meeting', fn ($q) => $q->where('scheduled_at', '>=', $semesterStart));
                     }, '>=', 2)),
             ])
             ->headerActions([
@@ -238,7 +234,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                         TextInput::make('password')
                             ->password()
                             ->required()
-                            ->dehydrateStateUsing(fn($state) => bcrypt($state))
+                            ->dehydrateStateUsing(fn ($state) => bcrypt($state))
                             ->revealable(),
                         TextInput::make('student_id')
                             ->label('Student ID')
@@ -310,7 +306,6 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                                 ->send();
                         }
                         // Log activity
-                        $user->logActivity('created', 'User', $user->id, null, $user->toArray());
 
                         return $user;
                     }),
@@ -320,6 +315,16 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                     ViewAction::make()
                         ->extraAttributes(['class' => 'z-9999999'])
                         ->schema([
+                            FileUpload::make('profile_photo')  // Changed from 'logo' to 'profile_photo' to match your model
+                                ->label('Profile Photo')
+                                ->image()
+                                ->imageEditor()
+                                ->directory('users/profile-photos')
+                                ->downloadable()
+                                ->avatar()
+                                ->circleCropper()
+                                ->maxSize(2048)
+                                ->disabled(),
                             TextInput::make('name')
                                 ->disabled(),
                             TextInput::make('email')
@@ -453,7 +458,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                                 ->send();
 
                             return $record;
-                        }),
+                        })->visible(fn (User $record) => $record->isSuperAdmin() === false),
 
                     Action::make('reset_password')
                         ->label('Reset Password')
@@ -480,7 +485,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                             $record->logActivity('password_reset', 'User', $record->id, null, ['password_changed' => true]);
 
                             // You might want to send email notification here
-                        }),
+                        })->visible(fn (User $record) => $record->isSuperAdmin() === false),
 
                     Action::make('impersonate')
                         ->label('Impersonate')
@@ -488,14 +493,15 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                         ->color('gray')
                         ->action(function (User $record) {
                             Auth::user()->impersonate($record);
+
                             return redirect('/dashboard');
                         })
-                        ->visible(fn(User $record) => Auth::user()->canImpersonate() && Auth::user()->canBeImpersonated()),
+                        ->visible(fn (User $record) => Auth::user()->canImpersonate() && Auth::user()->canBeImpersonated()),
 
                     Action::make('toggle_status')
-                        ->label(fn(User $record) => $record->membership_status === 'active' ? 'Suspend' : 'Activate')
-                        ->icon(fn(User $record) => $record->membership_status === 'active' ? 'heroicon-o-no-symbol' : 'heroicon-o-check')
-                        ->color(fn(User $record) => $record->membership_status === 'active' ? 'danger' : 'success')
+                        ->label(fn (User $record) => $record->membership_status === 'active' ? 'Suspend' : 'Activate')
+                        ->icon(fn (User $record) => $record->membership_status === 'active' ? 'heroicon-o-no-symbol' : 'heroicon-o-check')
+                        ->color(fn (User $record) => $record->membership_status === 'active' ? 'danger' : 'success')
                         ->action(function (User $record) {
                             $oldStatus = $record->membership_status;
                             $newStatus = $oldStatus === 'active' ? 'suspended' : 'active';
@@ -509,13 +515,13 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                                 ['membership_status' => $oldStatus],
                                 ['membership_status' => $newStatus]
                             );
-                        }),
+                        })->visible(fn (User $record) => $record->isSuperAdmin() === false),
 
                     Action::make('view_attendance')
                         ->label('Attendance History')
                         ->icon('heroicon-o-clipboard-document-list')
                         ->color('info')
-                        ->url(fn(User $record) => route('admin.users', $record)),
+                        ->url(fn (User $record) => route('admin.users', $record)),
 
                     DeleteAction::make()
                         ->requiresConfirmation()
@@ -524,16 +530,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                             $record->delete();
 
                             // Log activity
-                            ActivityLog::create([
-                                'user_id' => Auth::user()->id,
-                                'action' => 'deleted',
-                                'model' => 'User',
-                                'model_id' => $record->id,
-                                'description' => "Deleted user {$record->name}",
-                                'old_values' => $oldValues,
-                                'ip_address' => request()->ip(),
-                                'user_agent' => request()->userAgent(),
-                            ]);
+                            $record->logActivity('deleted', 'User', $record->id, $oldValues, null);
 
                             Notification::make()
                                 ->title('User deleted successfully')
@@ -541,7 +538,7 @@ class ManageUsers extends Component implements HasForms, HasTable, HasActions
                                 ->iconColor('danger')
                                 ->color('success')
                                 ->send();
-                        }),
+                        })->visible(fn (User $record) => $record->isSuperAdmin() === false),
                 ])
                     ->dropdownPlacement('bottom-end')
                     ->label('Actions')

@@ -1,18 +1,24 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Livewire\UserProfile;
+use App\Livewire\Admin\MeetingDetails;
+use App\Livewire\Admin\Meetings;
+use App\Livewire\Admin\RolePermissionManager;
+use App\Livewire\Admin\TransactionManagement;
+use App\Livewire\Admin\BudgetCategoryManagement;
+use App\Livewire\Admin\TreasurerDashboard;
+use App\Livewire\Admin\FinancialReports;
 use App\Livewire\Super\ManageUsers;
 // use App\Http\Controllers\Admin\MeetingController;
-use App\Livewire\Admin\Meetings;
-use App\Livewire\Admin\MeetingDetails;
-use App\Livewire\Admin\MeetingList;
+use App\Livewire\UserProfile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/user-profile', UserProfile::class)->name('user-profile');
+    Route::get('/members', \App\Livewire\MemberDirectory::class)->name('members.directory');
+    Route::get('/members/{user}', \App\Livewire\PublicMemberProfile::class)->name('members.profile');
 });
 
 // ADMIN ROUTES - Dashboard & Management
@@ -24,12 +30,15 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // Route::get('/user-profile', UserProfile::class)->name('admin.users');
     Route::get('/users', ManageUsers::class)->name('admin.users');
+    Route::get('/treasurer-dashboard', TreasurerDashboard::class)->name('admin.treasurer-dashboard');
+    Route::get('/financial-reports', FinancialReports::class)->name('admin.financial-reports');
+    Route::get('/transactions', TransactionManagement::class)->name('admin.transactions');
+    Route::get('/budget-categories', BudgetCategoryManagement::class)->name('admin.budget-categories');
     Route::get('/meetings', Meetings::class)->name('admin.meetings');
     Route::get('/meeting-details/{meeting}', MeetingDetails::class)->name('admin.meeting.details');
+    Route::get('/roles-permissions', RolePermissionManager::class)->name('admin.roles-permissions');
 
 });
-
-
 
 // FRONTEND ROUTES - Cybersecurity Club Website
 
@@ -52,6 +61,8 @@ Route::get('/team', function () {
 Route::get('/contact', function () {
     return view('frontend.contact', ['title' => 'Contact Us - Cybersecurity & Innovations Club']);
 })->name('contact');
+
+
 
 Route::impersonate();
 require __DIR__.'/auth.php';
