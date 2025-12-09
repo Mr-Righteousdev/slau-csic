@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Transaction;
-use App\Models\User;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -17,9 +17,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
-// use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -27,11 +24,14 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
@@ -150,6 +150,7 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                             'Travel' => 'Travel',
                             'Other Expense' => 'Other Expense',
                         ];
+
                         return array_merge($incomeCategories, $expenseCategories);
                     })
                     ->searchable()
@@ -191,12 +192,12 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                         $indicators = [];
 
                         if ($data['from_date'] ?? null) {
-                            $indicators[] = Indicator::make('From: ' . Carbon::parse($data['from_date'])->format('M d, Y'))
+                            $indicators[] = Indicator::make('From: '.Carbon::parse($data['from_date'])->format('M d, Y'))
                                 ->removeField('from_date');
                         }
 
                         if ($data['to_date'] ?? null) {
-                            $indicators[] = Indicator::make('To: ' . Carbon::parse($data['to_date'])->format('M d, Y'))
+                            $indicators[] = Indicator::make('To: '.Carbon::parse($data['to_date'])->format('M d, Y'))
                                 ->removeField('to_date');
                         }
 
@@ -246,10 +247,11 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                                                         'Other Expense' => 'Other Expense',
                                                     ];
                                                 }
+
                                                 return [];
                                             })
                                             ->required()
-                                            ->disabled(fn (callable $get) => !$get('type')),
+                                            ->disabled(fn (callable $get) => ! $get('type')),
 
                                         TextInput::make('amount')
                                             ->label('Amount')
@@ -410,10 +412,11 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                                                             'Other Expense' => 'Other Expense',
                                                         ];
                                                     }
+
                                                     return [];
                                                 })
                                                 ->required()
-                                                ->disabled(fn (callable $get) => !$get('type')),
+                                                ->disabled(fn (callable $get) => ! $get('type')),
 
                                             TextInput::make('amount')
                                                 ->numeric()
@@ -497,8 +500,7 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                         ->label('Approve')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->visible(fn (Transaction $record): bool =>
-                            $record->status === 'pending' &&
+                        ->visible(fn (Transaction $record): bool => $record->status === 'pending' &&
                             Auth::user()->hasAnyRole(['treasurer', 'president', 'super-admin'])
                         )
                         ->action(function (Transaction $record) {
@@ -518,8 +520,7 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                         ->label('Reject')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
-                        ->visible(fn (Transaction $record): bool =>
-                            $record->status === 'pending' &&
+                        ->visible(fn (Transaction $record): bool => $record->status === 'pending' &&
                             Auth::user()->hasAnyRole(['treasurer', 'president', 'super-admin'])
                         )
                         ->action(function (Transaction $record) {
@@ -547,10 +548,10 @@ class TransactionManagement extends Component implements HasActions, HasForms, H
                                 ->send();
                         }),
                 ])
-                ->dropdownPlacement('bottom-end')
-                ->label('Actions')
-                ->icon('heroicon-o-ellipsis-vertical')
-                ->button(),
+                    ->dropdownPlacement('bottom-end')
+                    ->label('Actions')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->button(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

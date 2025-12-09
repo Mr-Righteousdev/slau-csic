@@ -14,8 +14,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -23,16 +21,17 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class BudgetCategoryManagement extends Component implements HasActions, HasForms, HasTable
@@ -141,8 +140,12 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                                             ->label('Category Name')
                                             ->required()
                                             ->maxLength(255)
-                                            ->unique(BudgetCategory::class, 'name', fn ($query) => $query->where('type', request('type'))),
-
+                                            ->rules([
+                                                Rule::unique('budget_categories', 'name')
+                                                    ->where(function ($query) {
+                                                        return $query->where('type', $this->data['type'] ?? 'expense');
+                                                    }),
+                                            ]),
                                         Select::make('type')
                                             ->label('Category Type')
                                             ->options([
@@ -193,12 +196,12 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                     ])
                     ->using(function (array $data) {
                         $category = BudgetCategory::create($data);
-                        
+
                         Notification::make()
                             ->title('Budget category created successfully')
                             ->success()
                             ->send();
-                        
+
                         return $category;
                     }),
             ])
@@ -291,7 +294,7 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                         ])
                         ->using(function (BudgetCategory $record, array $data) {
                             $record->update($data);
-                            
+
                             Notification::make()
                                 ->title('Budget category updated successfully')
                                 ->success()
@@ -305,8 +308,8 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                         ->icon(fn (BudgetCategory $record): string => $record->is_active ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                         ->color(fn (BudgetCategory $record): string => $record->is_active ? 'danger' : 'success')
                         ->action(function (BudgetCategory $record) {
-                            $record->update(['is_active' => !$record->is_active]);
-                            
+                            $record->update(['is_active' => ! $record->is_active]);
+
                             Notification::make()
                                 ->title('Budget category status updated')
                                 ->success()
@@ -317,17 +320,17 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                         ->requiresConfirmation()
                         ->action(function (BudgetCategory $record) {
                             $record->delete();
-                            
+
                             Notification::make()
                                 ->title('Budget category deleted')
                                 ->success()
                                 ->send();
                         }),
                 ])
-                ->dropdownPlacement('bottom-end')
-                ->label('Actions')
-                ->icon('heroicon-o-ellipsis-vertical')
-                ->button(),
+                    ->dropdownPlacement('bottom-end')
+                    ->label('Actions')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->button(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -339,7 +342,7 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                             $records->each(function (BudgetCategory $record) {
                                 $record->update(['is_active' => true]);
                             });
-                            
+
                             Notification::make()
                                 ->title('Categories activated')
                                 ->success()
@@ -355,7 +358,7 @@ class BudgetCategoryManagement extends Component implements HasActions, HasForms
                             $records->each(function (BudgetCategory $record) {
                                 $record->update(['is_active' => false]);
                             });
-                            
+
                             Notification::make()
                                 ->title('Categories deactivated')
                                 ->success()

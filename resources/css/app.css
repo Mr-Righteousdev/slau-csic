@@ -939,6 +939,38 @@ pre[class*='language-'] {
 
 .swiper-button-prev, .swiper-button-next {
     svg {
-        fill: none !important;
+         fill: none !important;
     }
+}
+
+/* Menu Group Styles */
+.menu-group {
+    @apply relative;
+}
+
+/* Submenu Styles */
+.submenu-item {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200;
+}
+
+.submenu-item-active {
+    @apply bg-brand-50 text-brand-600 dark:bg-brand-500/[0.12] dark:text-brand-400;
+}
+
+.submenu-item-inactive {
+    @apply text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100;
+}
+
+/* Rotate animation for chevron */
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Financial submenu specific styles */
+.menu-group[x-data*="financial"] .submenu-item {
+    @apply border-l-4 border-transparent hover:border-gray-200 dark:hover:border-gray-700;
+}
+
+.menu-group[x-data*="financial"] .submenu-item-active {
+    @apply border-l-4 border-brand-500 dark:border-brand-400;
 }

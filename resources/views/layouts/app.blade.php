@@ -14,6 +14,30 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- User Permissions for JavaScript -->
+    @php
+        // Calculate permissions safely
+        $canCreateEvents = false;
+        $userId = null;
+        $userName = null;
+        $isAdmin = false;
+
+        if (auth()->check() && $user = auth()->user()) {
+            $canCreateEvents = $user->hasAnyRole(['admin', 'super-admin', 'member']);
+            $userId = $user->id;
+            $userName = e($user->name); // Escape for safety
+            $isAdmin = $user->hasRole('admin');
+        }
+    @endphp
+
+    <script>
+        window.userPermissions = {
+            canCreateEvents: {{ $canCreateEvents ? 'true' : 'false' }},
+            userId: {{ $userId ?: 'null' }},
+            userName: {{ $userName ? "'" . $userName . "'" : 'null' }},
+            isAdmin: {{ $isAdmin ? 'true' : 'false' }}
+        };
+    </script>
     <!-- Theme Store -->
     <script>
         document.addEventListener('alpine:init', () => {

@@ -4,14 +4,11 @@ import ApexCharts from 'apexcharts';
 // flatpickr
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-// FullCalendar
-import { Calendar } from '@fullcalendar/core';
 
 
 
 window.ApexCharts = ApexCharts;
 window.flatpickr = flatpickr;
-window.FullCalendar = Calendar;
 
 // Initialize components on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,8 +37,5 @@ document.addEventListener('DOMContentLoaded', () => {
         import('./components/chart/chart-13').then(module => module.initChartThirteen());
     }
 
-    // Calendar init
-    if (document.querySelector('#calendar')) {
-        import('./components/calendar-init').then(module => module.calendarInit());
-    }
+
 });

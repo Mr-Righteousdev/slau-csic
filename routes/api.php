@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes (no authentication required)
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/events', [EventController::class, 'index']); // Public endpoint
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
@@ -31,8 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn']);
     Route::get('/user/attendance', [AttendanceController::class, 'myHistory']);
 
-    // Events
-    Route::get('/events', [EventController::class, 'index']);
+    // Events (protected)
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::get('/events/{event}/edit-permission', [EventController::class, 'editPermission']);
     Route::post('/events/{event}/register', [EventController::class, 'register']);
     Route::get('/user/events', [EventController::class, 'myEvents']);
 

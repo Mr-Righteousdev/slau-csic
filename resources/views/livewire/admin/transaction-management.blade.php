@@ -1,5 +1,6 @@
-<div>
-    <div class="space-y-6">
+<div class="grid grid-cols-12 gap-4 md:gap-6">
+    <div class="col-span-12 space-y-6 xl:col-span-12">
+        
         <!-- Header -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div class="flex items-center justify-between">
@@ -26,7 +27,7 @@
                         <div class="text-lg font-bold text-blue-600">
                             ${{ number_format(
                                 \App\Models\Transaction::where('type', 'income')->where('status', 'approved')->sum('amount') -
-                                \App\Models\Transaction::where('type', 'expense')->where('status', 'approved')->sum('amount'), 
+                                \App\Models\Transaction::where('type', 'expense')->where('status', 'approved')->sum('amount'),
                                 2
                             ) }}
                         </div>

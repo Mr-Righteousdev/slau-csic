@@ -529,9 +529,9 @@ class User extends Authenticatable
     // In app/Models/User.php
     public function scopeForDirectory($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             // Include publicly visible users
-            $q->where(function($inner) {
+            $q->where(function ($inner) {
                 $inner->approved()
                     ->where('membership_status', 'active')
                     ->where(function ($privacy) {
@@ -548,6 +548,36 @@ class User extends Authenticatable
             //         });
             // });
         });
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'created_by');
+    }
+
+    public function fines()
+    {
+        return $this->hasMany(Fine::class);
+    }
+
+    public function finePayments()
+    {
+        return $this->hasMany(FinePayment::class, 'recorded_by');
+    }
+
+    public function issuedFines()
+    {
+        return $this->hasMany(Fine::class, 'issued_by');
+    }
+
+    public function waivedFines()
+    {
+        return $this->hasMany(Fine::class, 'waived_by');
+    }
+
+    public function fineAppeals()
+    {
+        return $this->hasMany(FineAppeal::class, 'reviewed_by');
     }
 
     // Accessors for public display

@@ -34,6 +34,11 @@ class Transaction extends Model
         'approved_at' => 'datetime',
     ];
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
@@ -49,7 +54,7 @@ class Transaction extends Model
 
     public function getFormattedAmountAttribute(): string
     {
-        return '$' . number_format($this->amount, 2);
+        return '$'.number_format($this->amount, 2);
     }
 
     public function scopeIncome($query)

@@ -1,12 +1,178 @@
-
 <div>
     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="custom-calendar">
-            <div id="calendar" class="min-h-screen"></div>
+            <div id="calendar" class="min-h-screen" wire:ignore></div>
         </div>
     </div>
 
-    <!-- Modal -->
+    @push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today addEventButton',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                customButtons: {
+                    addEventButton: {
+                        text: 'Add Event +',
+                        click: function() {
+                            @this.dispatch('open-create-modal');
+                        }
+                    }
+                },
+                events: @json($events),
+                editable: false,
+                selectable: true,
+                selectMirror: true,
+                dayMaxEvents: true,
+                weekends: true,
+                navLinks: true,
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    if (info.event.url) {
+                        window.open(info.event.url, '_blank');
+                    }
+                    @this.dispatch('event-click', { id: info.event.id });
+                },
+                dateClick: function(info) {
+                    @this.dispatch('date-click', { date: info.dateStr });
+                },
+                eventDidMount: function(info) {
+                    // Add custom styling to events
+                    const eventEl = info.el;
+
+                    // Add color based on event type
+                    if (info.event.extendedProps.type) {
+                        eventEl.style.backgroundColor = info.event.backgroundColor;
+                        eventEl.style.borderColor = info.event.backgroundColor;
+                    }
+
+                    // Add tooltip
+                    if (info.event.extendedProps.description) {
+                        eventEl.title = info.event.extendedProps.description;
+                    }
+                },
+                loading: function(isLoading) {
+                    if (isLoading) {
+                        // Show loading indicator
+                    } else {
+                        // Hide loading indicator
+                    }
+                }
+            });
+
+            calendar.render();
+
+            // Listen for Livewire events
+            Livewire.on('calendar-refreshed', () => {
+                calendar.refetchEvents();
+            });
+
+            Livewire.on('open-create-modal', (data) => {
+                // Open your create event modal
+                const modal = document.getElementById('eventModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+
+                    // If date is provided, set it in form
+                    if (data && data.date) {
+                        const startDateInput = document.getElementById('event-start-date');
+                        if (startDateInput) {
+                            startDateInput.value = data.date;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Initialize modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('eventModal');
+            const closeButtons = document.querySelectorAll('.modal-close-btn');
+            const addEventBtn = document.querySelector('.btn-add-event');
+            const updateEventBtn = document.querySelector('.btn-update-event');
+
+            if (modal) {
+                closeButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        modal.classList.add('hidden');
+                        resetForm();
+                    });
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        resetForm();
+                    }
+                });
+
+                // Add event button
+                if (addEventBtn) {
+                    addEventBtn.addEventListener('click', function() {
+                        const eventData = collectEventData();
+                        @this.call('createEvent', eventData);
+                        modal.classList.add('hidden');
+                        resetForm();
+                    });
+                }
+
+                // Update event button
+                if (updateEventBtn) {
+                    updateEventBtn.addEventListener('click', function() {
+                        const eventId = updateEventBtn.dataset.eventId;
+                        const eventData = collectEventData();
+                        @this.call('updateEvent', eventId, eventData);
+                        modal.classList.add('hidden');
+                        resetForm();
+                    });
+                }
+            }
+
+            function collectEventData() {
+                return {
+                    title: document.getElementById('event-title').value,
+                    color: document.querySelector('input[name="event-level"]:checked')?.value || 'primary',
+                    start_date: document.getElementById('event-start-date').value,
+                    end_date: document.getElementById('event-end-date').value,
+                    description: document.getElementById('event-description')?.value || '',
+                    location: document.getElementById('event-location')?.value || '',
+                };
+            }
+
+            function resetForm() {
+                document.getElementById('event-title').value = '';
+                document.getElementById('event-start-date').value = '';
+                document.getElementById('event-end-date').value = '';
+                document.getElementById('event-description')?.value = '';
+                document.getElementById('event-location')?.value = '';
+                document.querySelector('.btn-update-event').style.display = 'none';
+                document.querySelector('.btn-add-event').style.display = 'block';
+            }
+        });
+    </script>
+    
+    @if(!$canCreateEvent)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const addEventBtn = document.querySelector('.fc-addEventButton-button');
+                if (addEventBtn) {
+                    addEventBtn.style.display = 'none';
+                }
+            }, 100);
+        });
+    </script>
+    @endif
+    @endpush
+
+    <!-- Your existing modal HTML here -->
     <div class="fixed inset-0 items-center justify-center hidden p-5 overflow-y-auto modal z-99999" id="eventModal">
         <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
         <div class="modal-dialog relative flex w-full max-w-[700px] flex-col overflow-y-auto rounded-3xl bg-white p-6 lg:p-11 dark:bg-gray-900">
@@ -81,7 +247,7 @@
                                 <div class="form-check form-check-primary form-check-inline">
                                     <label class="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400" for="modalPrimary">
                                         <span class="relative">
-                                            <input class="sr-only form-check-input" type="radio" name="event-level" value="Primary" id="modalPrimary" />
+                                            <input class="sr-only form-check-input" type="radio" name="event-level" value="Primary" id="modalPrimary" checked />
                                             <span class="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
                                             </span>
                                         </span>
@@ -137,6 +303,22 @@
                         </div>
                     </div>
 
+                    <!-- Event Description -->
+                    <div class="mt-6">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Description
+                        </label>
+                        <textarea id="event-description" rows="3" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" placeholder="Enter event description"></textarea>
+                    </div>
+
+                    <!-- Event Location -->
+                    <div class="mt-6">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Location
+                        </label>
+                        <input id="event-location" type="text" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" placeholder="Enter event location" />
+                    </div>
+
                 </div>
 
                 <!-- Modal Footer -->
@@ -156,4 +338,3 @@
         </div>
     </div>
 </div>
-

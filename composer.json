@@ -7,6 +7,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "asantibanez/livewire-calendar": "*",
+        "barryvdh/laravel-dompdf": "^3.1",
         "filament/actions": "^4.0",
         "filament/filament": "*",
         "filament/forms": "^4.0",
@@ -20,6 +22,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.7",
+        "maatwebsite/excel": "^3.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.23"
