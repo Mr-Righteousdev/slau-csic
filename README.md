@@ -9,11 +9,10 @@ frontend.
 
 ## 1. Cloning the project from GitHub
 
-> Replace `YOUR_GITHUB_USERNAME` with the actual GitHub username or org that hosts this repo.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/cyber-web-app.git
-cd cyber-web-app
+git clone https://github.com/Mr-Righteousdev/slau-csic.git
+cd slau-csic
 ```
 
 If you already have a local clone, just pull the latest changes:
@@ -56,14 +55,10 @@ leave the default SQLite or simple local config in `.env` as-is.
 In one terminal:
 
 ```bash
-php artisan serve
+composer run dev
 ```
 
-In another terminal:
 
-```bash
-npm run dev
-```
 
 Visit the app at `http://localhost:8000`.
 
@@ -101,8 +96,7 @@ classes, without touching controllers, models, or database code.
    ```
 3. **Run the frontend dev server** (Vite) together with the Laravel server:
    ```bash
-   php artisan serve
-   npm run dev
+   composer run dev
    ```
 4. **Edit frontend files** under `resources/views/frontend` and `resources/views/layouts/frontend.blade.php`.
 5. Use Tailwind utility classes directly in Blade for styling.
