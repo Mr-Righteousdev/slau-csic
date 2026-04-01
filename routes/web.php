@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
-Route::get('/events', \App\Livewire\EventCards::class)->name('events');
+
 Route::get('/events/{event:slug}', EventDetails::class)->name('events.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -71,6 +71,10 @@ Route::get('/team', function () {
 Route::get('/contact', function () {
     return view('frontend.contact', ['title' => 'Contact Us - Cybersecurity & Innovations Club']);
 })->name('contact');
+
+Route::get('/events-out', function () {
+    return view('frontend.events', ['title' => 'Events - Cybersecurity & Innovations Club']);
+})->name('events-out');
 
 Route::impersonate();
 require __DIR__.'/auth.php';

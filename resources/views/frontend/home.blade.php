@@ -33,7 +33,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 5l7 7-7 7" />
                             </svg>
                         </a>
-                        <a href="{{ route('events') }}" class="text-sm font-medium text-gray-200 hover:text-emerald-400 flex items-center gap-2">
+                        <a href="{{ route('events-out') }}" class="text-sm font-medium text-gray-200 hover:text-emerald-400 flex items-center gap-2">
                             View upcoming events
                             <span class="text-xs text-emerald-400 border border-emerald-400/50 rounded-full px-2 py-0.5">CTFs • Workshops • Talks</span>
                         </a>
@@ -97,7 +97,7 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('events') }}" class="text-[11px] font-medium text-emerald-300 hover:text-emerald-200 flex items-center gap-1">
+                                <a href="{{ route('events-out') }}" class="text-[11px] font-medium text-emerald-300 hover:text-emerald-200 flex items-center gap-1">
                                     View full events calendar
                                     <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 5l7 7-7 7" />

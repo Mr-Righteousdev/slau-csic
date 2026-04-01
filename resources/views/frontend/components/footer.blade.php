@@ -14,7 +14,7 @@
                 <h4 class="text-sm font-semibold text-gray-300 mb-3">Quick Links</h4>
                 <ul class="space-y-2 text-sm text-gray-400">
                     <li><a href="{{ route('about') }}" class="hover:text-emerald-400">About the Club</a></li>
-                    <li><a href="{{ route('events') }}" class="hover:text-emerald-400">Upcoming Events</a></li>
+                    <li><a href="{{ route('events-out') }}" class="hover:text-emerald-400">Upcoming Events</a></li>
                     <li><a href="{{ route('team') }}" class="hover:text-emerald-400">Leadership Team</a></li>
                     <li><a href="{{ route('contact') }}" class="hover:text-emerald-400">Contact</a></li>
                 </ul>

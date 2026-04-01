@@ -2,7 +2,7 @@
     $links = [
         ['label' => 'Home', 'route' => 'home'],
         ['label' => 'About', 'route' => 'about'],
-        ['label' => 'Events', 'route' => 'events'],
+        ['label' => 'Events', 'route' => 'events-out'],
         ['label' => 'Team', 'route' => 'team'],
         ['label' => 'Contact', 'route' => 'contact'],
     ];
