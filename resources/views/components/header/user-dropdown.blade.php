@@ -7,29 +7,19 @@
         this.dropdownOpen = false;
     }
 }" @click.away="closeDropdown()">
+    @auth
     <!-- User Button -->
     <button
         class="flex items-center text-gray-700 dark:text-gray-400"
         @click.prevent="toggleDropdown()"
         type="button"
     >
-    {{-- @dd(Auth::user()->profile_photo) --}}
         <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
             @php
                 $user = Auth::user();
-
-                // Method 1: Direct Storage URL (most common)
                 $profilePhotoUrl = $user->profile_photo
                     ? Storage::url($user->profile_photo)
                     : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&color=FFFFFF&background=6366f1';
-
-                // Method 2: If the above doesn't work, try asset()
-                // $profilePhotoUrl = $user->profile_photo
-                //     ? asset('storage/' . $user->profile_photo)
-                //     : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&color=FFFFFF&background=6366f1';
-
-                // For debugging - uncomment to see what URL is generated
-                // dd($user->profile_photo, $profilePhotoUrl, Storage::url($user->profile_photo));
             @endphp
 
             <img
@@ -135,4 +125,5 @@
         </form>
     </div>
     <!-- Dropdown End -->
+    @endauth
 </div>
