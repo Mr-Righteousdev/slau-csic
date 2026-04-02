@@ -1,3 +1,846 @@
+# School Management System - VPS Deployment Guide
+**Developer:** Mr-Righteousdev
+**Target Server:** Contabo VPS M
+**Estimated Time:** 3-4 hours (first deployment)
+**Date:** April 2026
+
+---
+
+## 📋 PRE-DEPLOYMENT CHECKLIST
+
+### Local Environment
+- [ ] All features tested locally
+- [ ] Database migrations verified
+- [ ] Seeds working properly
+- [ ] .env.example updated
+- [ ] Git repository clean (no sensitive data)
+- [ ] Documentation updated
+
+### Required Accounts & Access
+- [ ] Contabo VPS account created
+- [ ] Domain registrar access (Namecheap/GoDaddy)
+- [ ] GitHub/GitLab repository ready
+- [ ] Email account for system notifications
+- [ ] SMS provider account (Africa's Talking - optional)
+
+### Required Information
+- [ ] Client's domain name
+- [ ] Schools list for initial setup
+- [ ] Admin contact details
+- [ ] Backup email addresses
+
+---
+
+## 🚀 PHASE 1: VPS ORDERING (15 minutes)
+
+### Step 1.1: Order VPS from Contabo
+1. Go to: https://contabo.com/en/vps/
+2. Select: **VPS M** (€7.99/month)
+3. Configuration:
+   - **Operating System:** Ubuntu 22.04 LTS
+   - **Storage:** 200 GB NVMe SSD
+   - **Location:** Europe (Germany) - closest to Uganda
+   - **Contract Period:** 1 month (flexible)
+   - **Add-ons:** ✅ Automated Backups (+€2.99/month)
+4. Complete payment
+5. **Save credentials email** - contains:
+```
+   IP Address: xxx.xxx.xxx.xxx
+   Root Password: xxxxxxxxxxxxx
+   Control Panel: https://panel.contabo.com
+```
+
+### Step 1.2: DNS Configuration
+1. Log into domain registrar (e.g., Namecheap)
+2. Go to DNS settings
+3. Add records:
+```
+   Type    Host    Value               TTL
+   A       @       [VPS_IP_ADDRESS]    Automatic
+   A       *       [VPS_IP_ADDRESS]    Automatic
+   A       www     [VPS_IP_ADDRESS]    Automatic
+```
+4. Wait 5-30 minutes for propagation
+
+---
+
+## 🔧 PHASE 2: SERVER INITIAL SETUP (30 minutes)
+
+### Step 2.1: Connect to VPS
+```bash
+# Windows (use PuTTY or Windows Terminal)
+ssh root@[VPS_IP_ADDRESS]
+
+# Mac/Linux
+ssh root@[VPS_IP_ADDRESS]
+# Enter password from email
+```
+
+### Step 2.2: System Update
+```bash
+apt update && apt upgrade -y
+apt install curl wget git unzip software-properties-common -y
+```
+
+### Step 2.3: Create Deploy User
+```bash
+# Create user
+adduser deploy
+# Set strong password: UgandaSchools2026!
+
+# Add to sudo group
+usermod -aG sudo deploy
+
+# Switch to deploy user
+su - deploy
+```
+
+### Step 2.4: Set Up SSH Key (Security)
+**On your local machine:**
+```bash
+# Generate SSH key if you don't have one
+ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+
+# Copy public key content
+cat ~/.ssh/id_rsa.pub
+```
+
+**Back on VPS:**
+```bash
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+nano ~/.ssh/authorized_keys
+# Paste your public key
+chmod 600 ~/.ssh/authorized_keys
+exit
+```
+
+### Step 2.5: Secure SSH
+```bash
+sudo nano /etc/ssh/sshd_config
+
+# Find and change these lines:
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+
+# Save (Ctrl+X, Y, Enter)
+sudo systemctl restart sshd
+```
+
+### Step 2.6: Configure Firewall
+```bash
+sudo ufw allow 22/tcp      # SSH
+sudo ufw allow 80/tcp      # HTTP
+sudo ufw allow 443/tcp     # HTTPS
+sudo ufw enable
+sudo ufw status
+```
+
+---
+
+## 📦 PHASE 3: SOFTWARE INSTALLATION (45 minutes)
+
+### Step 3.1: Install Nginx
+```bash
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### Step 3.2: Install PHP 8.2
+```bash
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+sudo apt install php8.2-fpm php8.2-cli php8.2-common php8.2-mysql \
+    php8.2-zip php8.2-gd php8.2-mbstring php8.2-curl php8.2-xml \
+    php8.2-bcmath php8.2-redis php8.2-intl php8.2-soap php8.2-imagick -y
+
+# Verify installation
+php -v
+```
+
+### Step 3.3: Install Composer
+```bash
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+composer --version
+```
+
+### Step 3.4: Install MySQL 8.0
+```bash
+sudo apt install mysql-server -y
+
+# Secure installation
+sudo mysql_secure_installation
+# Answer:
+# - Set root password: UgandaSchoolDB2026!
+# - Remove anonymous users: Y
+# - Disallow root login remotely: Y
+# - Remove test database: Y
+# - Reload privilege tables: Y
+```
+
+**Configure MySQL:**
+```bash
+sudo mysql -u root -p
+# Enter password: UgandaSchoolDB2026!
+```
+```sql
+-- Create central database
+CREATE DATABASE schoolsystem_central CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Create database user
+CREATE USER 'schooladmin'@'localhost' IDENTIFIED BY 'SchoolPass2026!@#';
+GRANT ALL PRIVILEGES ON *.* TO 'schooladmin'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+-- Verify
+SHOW DATABASES;
+EXIT;
+```
+
+### Step 3.5: Install Redis
+```bash
+sudo apt install redis-server -y
+sudo systemctl start redis
+sudo systemctl enable redis
+redis-cli ping  # Should return: PONG
+```
+
+### Step 3.6: Install Node.js 20
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install nodejs -y
+node --version
+npm --version
+```
+
+### Step 3.7: Install Supervisor (Queue Manager)
+```bash
+sudo apt install supervisor -y
+sudo systemctl start supervisor
+sudo systemctl enable supervisor
+```
+
+---
+
+## 🏗️ PHASE 4: APPLICATION DEPLOYMENT (60 minutes)
+
+### Step 4.1: Create Directory Structure
+```bash
+cd /var/www
+sudo mkdir school-system
+sudo chown deploy:deploy school-system
+cd school-system
+```
+
+### Step 4.2: Clone Repository
+```bash
+# Using HTTPS
+git clone https://github.com/yourusername/school-system.git .
+
+# Or using SSH (recommended)
+git clone git@github.com:yourusername/school-system.git .
+```
+
+### Step 4.3: Install Dependencies
+```bash
+# PHP dependencies
+composer install --optimize-autoloader --no-dev
+
+# JavaScript dependencies
+npm install
+npm run build
+```
+
+### Step 4.4: Environment Configuration
+```bash
+cp .env.example .env
+nano .env
+```
+
+**Update these values:**
+```env
+APP_NAME="School Management System"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+APP_KEY=  # Will generate next
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=schoolsystem_central
+DB_USERNAME=schooladmin
+DB_PASSWORD=SchoolPass2026!@#
+
+TENANCY_DATABASE_AUTO_DELETE=false
+TENANCY_DATABASE_AUTO_DELETE_USER=false
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-system-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+FILESYSTEM_DISK=public
+
+QUEUE_CONNECTION=redis
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# Africa's Talking (for SMS)
+AT_USERNAME=your_username
+AT_API_KEY=your_api_key
+AT_SENDER_ID=SCHOOL
+```
+
+### Step 4.5: Generate Keys & Run Migrations
+```bash
+# Generate application key
+php artisan key:generate
+
+# Run migrations
+php artisan migrate --force
+
+# Seed central database (super admin, roles, etc.)
+php artisan db:seed --force
+
+# Create storage link
+php artisan storage:link
+
+# Optimize application
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+```
+
+### Step 4.6: Set Permissions
+```bash
+sudo chown -R deploy:www-data /var/www/school-system
+sudo chmod -R 775 /var/www/school-system/storage
+sudo chmod -R 775 /var/www/school-system/bootstrap/cache
+sudo chmod -R 755 /var/www/school-system/public
+```
+
+---
+
+## 🌐 PHASE 5: WEB SERVER CONFIGURATION (30 minutes)
+
+### Step 5.1: Configure Nginx
+```bash
+sudo nano /etc/nginx/sites-available/school-system
+```
+
+**Paste this configuration:**
+```nginx
+# Main domain (central app)
+server {
+    listen 80;
+    listen [::]:80;
+    server_name yourdomain.com www.yourdomain.com;
+    root /var/www/school-system/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection "1; mode=block";
+
+    index index.php;
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param PHP_VALUE "upload_max_filesize=20M \n post_max_size=21M";
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    client_max_body_size 20M;
+    client_body_timeout 120s;
+}
+
+# Wildcard subdomain (tenant schools)
+server {
+    listen 80;
+    listen [::]:80;
+    server_name *.yourdomain.com;
+    root /var/www/school-system/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection "1; mode=block";
+
+    index index.php;
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param PHP_VALUE "upload_max_filesize=20M \n post_max_size=21M";
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    client_max_body_size 20M;
+    client_body_timeout 120s;
+}
+```
+
+### Step 5.2: Enable Site
+```bash
+# Create symbolic link
+sudo ln -s /etc/nginx/sites-available/school-system /etc/nginx/sites-enabled/
+
+# Remove default site
+sudo rm /etc/nginx/sites-enabled/default
+
+# Test configuration
+sudo nginx -t
+
+# Reload Nginx
+sudo systemctl reload nginx
+```
+
+### Step 5.3: Configure PHP-FPM
+```bash
+sudo nano /etc/php/8.2/fpm/php.ini
+
+# Find and update these values:
+upload_max_filesize = 20M
+post_max_size = 21M
+memory_limit = 512M
+max_execution_time = 300
+max_input_time = 300
+
+# Save and restart
+sudo systemctl restart php8.2-fpm
+```
+
+---
+
+## 🔒 PHASE 6: SSL CERTIFICATE (15 minutes)
+
+### Step 6.1: Install Certbot
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+### Step 6.2: Obtain SSL Certificate
+```bash
+# For main domain and wildcard
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com -d *.yourdomain.com
+
+# Follow prompts:
+# - Enter email: your-email@example.com
+# - Agree to terms: Y
+# - Share email with EFF: N (optional)
+# - Redirect HTTP to HTTPS: 2 (Yes, recommended)
+```
+
+### Step 6.3: Test Auto-Renewal
+```bash
+sudo certbot renew --dry-run
+```
+
+---
+
+## ⚙️ PHASE 7: BACKGROUND SERVICES (20 minutes)
+
+### Step 7.1: Configure Queue Workers
+```bash
+sudo nano /etc/supervisor/conf.d/laravel-worker.conf
+```
+
+**Paste:**
+```ini
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/school-system/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=deploy
+numprocs=4
+redirect_stderr=true
+stdout_logfile=/var/www/school-system/storage/logs/worker.log
+stopwaitsecs=3600
+```
+```bash
+# Update supervisor
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-worker:*
+
+# Check status
+sudo supervisorctl status
+```
+
+### Step 7.2: Configure Laravel Horizon (Optional)
+```bash
+sudo nano /etc/supervisor/conf.d/laravel-horizon.conf
+```
+
+**Paste:**
+```ini
+[program:laravel-horizon]
+process_name=%(program_name)s
+command=php /var/www/school-system/artisan horizon
+autostart=true
+autorestart=true
+user=deploy
+redirect_stderr=true
+stdout_logfile=/var/www/school-system/storage/logs/horizon.log
+stopwaitsecs=3600
+```
+
+### Step 7.3: Set Up Cron Jobs
+```bash
+sudo crontab -e -u deploy
+```
+
+**Add:**
+```cron
+# Laravel Scheduler
+* * * * * cd /var/www/school-system && php artisan schedule:run >> /dev/null 2>&1
+
+# Database Backup (Daily at 2 AM)
+0 2 * * * cd /var/www/school-system && php artisan backup:run --only-db >> /var/www/school-system/storage/logs/backup.log 2>&1
+
+# Full Backup (Weekly - Sunday 3 AM)
+0 3 * * 0 cd /var/www/school-system && php artisan backup:run >> /var/www/school-system/storage/logs/backup.log 2>&1
+
+# Clear old logs (Monthly)
+0 4 1 * * find /var/www/school-system/storage/logs -name "*.log" -mtime +30 -delete
+```
+
+---
+
+## 📊 PHASE 8: MONITORING & OPTIMIZATION (20 minutes)
+
+### Step 8.1: Install Laravel Telescope (Staging Only)
+```bash
+composer require laravel/telescope --dev
+php artisan telescope:install
+php artisan migrate
+
+# Publish assets
+php artisan telescope:publish
+```
+
+### Step 8.2: Install Laravel Horizon
+```bash
+composer require laravel/horizon
+php artisan horizon:install
+php artisan migrate
+```
+
+### Step 8.3: Set Up Backup Package
+```bash
+composer require spatie/laravel-backup
+php artisan vendor:publish --provider="Spatie\Backup\BackupServiceProvider"
+php artisan migrate
+```
+
+**Configure backup:** `config/backup.php`
+```php
+'destination' => [
+    'disks' => [
+        'local',
+        // Add external backup later (S3, DigitalOcean Spaces, etc.)
+    ],
+],
+```
+
+### Step 8.4: Server Monitoring
+```bash
+# Install htop (process monitor)
+sudo apt install htop -y
+
+# Install ncdu (disk usage)
+sudo apt install ncdu -y
+
+# Monitor logs
+tail -f /var/www/school-system/storage/logs/laravel.log
+```
+
+---
+
+## 🧪 PHASE 9: TESTING & VERIFICATION (30 minutes)
+
+### Step 9.1: Application Tests
+```bash
+# Test main domain
+curl -I https://yourdomain.com
+# Should return: HTTP/2 200
+
+# Test tenant subdomain
+curl -I https://schoolname.yourdomain.com
+# Should return: HTTP/2 200 (after creating a school)
+
+# Check queue workers
+sudo supervisorctl status
+# All should show: RUNNING
+
+# Check cron jobs
+sudo crontab -l -u deploy
+
+# Check Redis
+redis-cli ping
+# Should return: PONG
+
+# Check MySQL
+mysql -u schooladmin -p -e "SHOW DATABASES;"
+```
+
+### Step 9.2: Create First School (Test)
+1. Visit: https://yourdomain.com
+2. Login as super admin (from seeders)
+3. Create test school:
+   - Name: Test School
+   - Subdomain: testschool
+   - Admin details
+4. Visit: https://testschool.yourdomain.com
+5. Verify login works
+
+### Step 9.3: Test File Uploads
+1. Login to tenant (testschool)
+2. Upload student profile photo
+3. Check storage: `ls -la /var/www/school-system/storage/app/public/`
+4. Verify image displays
+
+### Step 9.4: Test Email
+```bash
+php artisan tinker
+```
+```php
+Mail::raw('Test email from school system', function($message) {
+    $message->to('your-email@example.com')
+            ->subject('Test Email');
+});
+```
+
+### Step 9.5: Performance Check
+```bash
+# Load testing (optional)
+sudo apt install apache2-utils -y
+ab -n 100 -c 10 https://yourdomain.com/
+```
+
+---
+
+## 🔄 PHASE 10: DEPLOYMENT WORKFLOW (Future Updates)
+
+### Step 10.1: Create Deployment Script
+```bash
+nano ~/deploy.sh
+```
+
+**Paste:**
+```bash
+#!/bin/bash
+
+echo "🚀 Starting deployment..."
+
+cd /var/www/school-system
+
+# Enable maintenance mode
+php artisan down
+
+# Pull latest code
+git pull origin main
+
+# Install/update dependencies
+composer install --optimize-autoloader --no-dev
+npm install
+npm run build
+
+# Run migrations
+php artisan migrate --force
+
+# Clear and rebuild cache
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+
+# Restart queue workers
+sudo supervisorctl restart laravel-worker:*
+
+# Disable maintenance mode
+php artisan up
+
+echo "✅ Deployment complete!"
+```
+```bash
+chmod +x ~/deploy.sh
+```
+
+### Step 10.2: Deploy Updates
+```bash
+# On your local machine
+git add .
+git commit -m "Feature: Assignment system"
+git push origin main
+
+# On server
+ssh deploy@[VPS_IP]
+~/deploy.sh
+```
+
+---
+
+## 📋 POST-DEPLOYMENT CHECKLIST
+
+- [ ] All URLs working (main + wildcard)
+- [ ] HTTPS enabled (green padlock)
+- [ ] Database connections working
+- [ ] File uploads working
+- [ ] Emails sending
+- [ ] Queue workers running
+- [ ] Cron jobs scheduled
+- [ ] Backups configured
+- [ ] Firewall active
+- [ ] SSH secured (key-based only)
+- [ ] Monitoring tools installed
+- [ ] First school created successfully
+- [ ] Documentation updated
+- [ ] Client credentials provided
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### Issue: 502 Bad Gateway
+```bash
+# Check PHP-FPM status
+sudo systemctl status php8.2-fpm
+
+# Restart services
+sudo systemctl restart php8.2-fpm nginx
+```
+
+### Issue: Permission Denied
+```bash
+sudo chown -R deploy:www-data /var/www/school-system
+sudo chmod -R 775 /var/www/school-system/storage
+sudo chmod -R 775 /var/www/school-system/bootstrap/cache
+```
+
+### Issue: Queue Not Processing
+```bash
+sudo supervisorctl status
+sudo supervisorctl restart laravel-worker:*
+tail -f /var/www/school-system/storage/logs/worker.log
+```
+
+### Issue: Database Connection Error
+```bash
+# Test MySQL connection
+mysql -u schooladmin -p
+
+# Check .env credentials
+cat /var/www/school-system/.env | grep DB_
+
+# Restart MySQL
+sudo systemctl restart mysql
+```
+
+### Issue: Out of Memory
+```bash
+# Check memory usage
+free -h
+
+# Check processes
+htop
+
+# Optimize PHP memory
+sudo nano /etc/php/8.2/fpm/php.ini
+# Increase: memory_limit = 512M
+sudo systemctl restart php8.2-fpm
+```
+
+---
+
+## 📞 SUPPORT CONTACTS
+
+**Contabo Support:** support@contabo.com
+**Laravel Community:** https://laracasts.com/discuss
+**Stack Overflow:** https://stackoverflow.com/questions/tagged/laravel
+
+---
+
+## 💰 DEPLOYMENT COSTS SUMMARY
+
+| Item | Cost (UGX) | Frequency |
+|------|------------|-----------|
+| VPS M | 35,000 | Monthly |
+| Backups | 13,000 | Monthly |
+| Domain | 40,000 | Yearly |
+| SSL Certificate | FREE | Auto-renew |
+| **Monthly Total** | **48,000 UGX** | - |
+| **Yearly Total** | **616,000 UGX** | - |
+
+**Note:** Exchange rate: €1 = 4,400 UGX (approximate)
+
+---
+
+## 📚 ADDITIONAL RESOURCES
+
+- Laravel Deployment: https://laravel.com/docs/deployment
+- Nginx Configuration: https://nginx.org/en/docs/
+- Server Security: https://www.digitalocean.com/community/tutorials
+- Contabo Docs: https://docs.contabo.com/
+
+---
+
+**Last Updated:** April 2026
+**Developer:** Mr-Righteousdev
+**Version:** 1.0
+
+
+
+
+
+
+
 ROLES & PERMISSIONS STRUCTURE
 Roles (Using Spatie)
 
@@ -168,7 +1011,7 @@ php
   * Social links (GitHub, LinkedIn)
   * Skills (tags input)
 
-- Filament Notification: 
+- Filament Notification:
   * Registration success
   * Email verification sent
   * Profile updated
@@ -528,7 +1371,7 @@ php
 
 ### **Watch Out For**
 ⚠️ **Grace Period**: Give 24-hour grace before marking event no-show
-⚠️ **Notification System**: 
+⚠️ **Notification System**:
   - Send fine issued notification immediately
   - Reminder 3 days before due date
   - Overdue notification on due date
@@ -573,48 +1416,48 @@ php
     - Description (rich text editor)
     - Event type (select: Workshop, Competition, Social, Meeting, Guest Speaker, Hackathon)
     - Cover image (file upload)
-  
+
   * Section 2: Schedule
     - Start date & time (datetime picker)
     - End date & time (datetime picker)
     - Is recurring (toggle)
       - If yes: Recurrence pattern (select: Weekly, Biweekly, Monthly)
       - Recurrence end date
-  
+
   * Section 3: Location & Capacity
     - Location (text or select from saved venues)
     - Room number (text)
     - Virtual link (URL - for hybrid events)
     - Capacity (number)
     - Allow waitlist (toggle)
-  
+
   * Section 4: Requirements
     - Skill level (select: All, Beginner, Intermediate, Advanced)
     - Prerequisites (textarea)
     - Required equipment (textarea)
-  
+
   * Section 5: Instructor/Presenter
     - Instructor (searchable select - members or external)
     - Co-instructors (multi-select)
     - Guest speaker details (if external)
-  
+
   * Section 6: Resources
     - Materials/slides link (URL)
     - Additional resources (file upload - multiple)
     - Related resources (relation select)
-  
+
   * Section 7: Registration Settings
     - Registration opens (datetime)
     - Registration closes (datetime)
     - Requires approval (toggle)
     - Allow guest registration (toggle)
     - No-show fine amount (currency)
-  
+
   * Section 8: Points & Recognition
     - Experience points awarded (number)
     - Certificate provided (toggle)
     - Counts toward requirements (checkbox: Required workshops, CTF participation, etc.)
-  
+
   * Section 9: Visibility
     - Is public (toggle - visible to non-members)
     - Featured event (toggle - shows on homepage)
@@ -775,7 +1618,7 @@ php
 
 ### **Watch Out For**
 ⚠️ **Timezone Handling**: Store all times in UTC, display in local
-⚠️ **Capacity Management**: 
+⚠️ **Capacity Management**:
   - Don't allow over-registration
   - Waitlist moves up automatically when cancellation
   - Officers can override capacity (with reason)
@@ -825,7 +1668,7 @@ php
     - Meeting type (select: General, Cabinet, Committee, Emergency, Planning)
     - Title (text)
     - Description/Purpose (textarea)
-  
+
   * Section 2: Schedule
     - Date (date picker)
     - Start time (time picker)
@@ -833,13 +1676,13 @@ php
     - Is recurring (toggle)
       - Pattern (if recurring): Weekly, Biweekly, Monthly
       - Ends after (number of occurrences or date)
-  
+
   * Section 3: Location & Access
     - Location type (select: In-person, Virtual, Hybrid)
     - Room/Venue (text)
     - Virtual link (URL - Zoom, Teams, etc.)
     - Virtual password (text)
-  
+
   * Section 4: Participants
     - Required attendees (multi-select users by role)
       - All members (for general meetings)
@@ -848,7 +1691,7 @@ php
       - Specific committees
     - Optional attendees (multi-select)
     - Guest attendees (repeater: name, email, organization)
-  
+
   * Section 5: Agenda
     - Agenda items (repeater)
       - Item title
@@ -857,7 +1700,7 @@ php
       - Type (Discussion, Decision, Update, Other)
       - Attachments
     - Pre-reading materials (file upload)
-  
+
   * Section 6: Settings
     - Attendance mandatory (toggle)
     - Absence fine amount (if mandatory)
@@ -871,7 +1714,7 @@ php
   * Attendees present (checklist)
   * Attendees absent (with reasons)
   * Late arrivals/Early departures
-  
+
   * For each agenda item:
     - Discussion summary (rich text)
     - Decisions made (repeater)
@@ -880,11 +1723,11 @@ php
       - Assigned to
       - Due date
       - Priority
-  
+
   * Additional notes (rich text)
   * Next meeting date
   * Adjournment time
-  
+
   * Recorded by (auto-filled)
   * Approved by (select - typically President/Secretary)
   * Minutes status (Draft, Under Review, Approved, Published)
@@ -1106,7 +1949,7 @@ php
 - Informal minutes
 
 ### **Watch Out For**
-⚠️ **Meeting Scheduling Conflicts**: 
+⚠️ **Meeting Scheduling Conflicts**:
   - Check for conflicts with other meetings
   - Check for conflicts with major campus events
   - Warn if scheduling during exam periods
@@ -1196,14 +2039,14 @@ php
     - Project type (select: Web App, Mobile App, Tool, Research, Hardware, Other)
     - Category (select: Security Tool, Educational, CTF Practice, Club Management, Other)
     - Cover image (file upload)
-  
+
   * Section 2: Technical Details
     - Tech stack (tags input: Python, JavaScript, React, Laravel, etc.)
     - Required skills (tags input)
     - Difficulty level (select: Beginner-friendly, Intermediate, Advanced)
     - Estimated duration (select: < 1 month, 1-3 months, 3-6 months, 6+ months)
     - Prerequisites (textarea)
-  
+
   * Section 3: Team Structure
     - Minimum team size (number)
     - Maximum team size (number)
@@ -1214,13 +2057,13 @@ php
       - Required skills
       - Description
     - Is recruiting (toggle)
-  
+
   * Section 4: Goals & Objectives
     - Project goals (repeater: goal description)
     - Expected outcomes (textarea)
     - Learning objectives (textarea)
     - Success criteria (repeater)
-  
+
   * Section 5: Timeline & Milestones
     - Start date (date picker)
     - Expected end date (date picker)
@@ -1230,7 +2073,7 @@ php
       - Due date
       - Deliverables
       - Status (Not started, In progress, Completed)
-  
+
   * Section 6: Resources & Repository
     - GitHub repository URL (URL)
     - Project documentation link (URL)
@@ -1238,19 +2081,19 @@ php
     - Communication channel (select: Slack, Discord, Teams)
     - Channel link/invite (URL)
     - Additional resources (file upload - multiple)
-  
+
   * Section 7: Collaboration
     - Meeting schedule (text: e.g., "Every Wednesday 7 PM")
     - Communication expectations (textarea)
     - Contribution guidelines (textarea)
-  
+
   * Section 8: Approval & Recognition
     - Requires faculty advisor approval (toggle)
     - Faculty advisor (select user with role 'advisor')
     - Credits for resume/portfolio (toggle)
     - Certificate upon completion (toggle)
     - Experience points awarded (number)
-  
+
   * Status (hidden field: auto-set based on workflow)
     - Pending Approval
     - Approved
@@ -1622,20 +2465,20 @@ php
     - Competition type (select: Jeopardy, Attack-Defense, King of the Hill, Mixed)
     - Cover image/banner (file upload)
     - Difficulty level (select: Beginner, Intermediate, Advanced, Mixed)
-  
+
   * Section 2: Schedule
     - Start date & time (datetime picker)
     - End date & time (datetime picker)
     - Duration (auto-calculated, or custom for special formats)
     - Timezone (select - default to school timezone)
-  
+
   * Section 3: Team Settings
     - Is team-based (toggle - if off, individual competition)
     - Minimum team size (number - default 1)
     - Maximum team size (number - default 4)
     - Allow team changes after start (toggle)
     - Allow solo participants in team competition (toggle)
-  
+
   * Section 4: Registration
     - Registration opens (datetime)
     - Registration closes (datetime)
@@ -1643,7 +2486,7 @@ php
     - Requires approval (toggle)
     - Allow guest participants (toggle - external competitors)
     - Registration fee (currency - optional for major competitions)
-  
+
   * Section 5: Scoring & Rules
     - Scoring type (select: Static, Dynamic, Custom)
     - First blood bonus (number - extra points for first solve)
@@ -1652,13 +2495,13 @@ php
     - Hints system (toggle)
     - Hint penalty (number - points deducted per hint)
     - Max hints per challenge (number)
-  
+
   * Section 6: Challenges
     - Import challenges from previous CTF (toggle)
     - Challenge categories enabled (multi-select: Web, Crypto, Forensics, Pwn, Reverse, OSINT, Misc)
     - Total challenges planned (number)
     - Total points available (auto-calculated or manual)
-  
+
   * Section 7: Prizes & Recognition
     - Prizes (repeater)
       - Place (1st, 2nd, 3rd)
@@ -1667,20 +2510,20 @@ php
     - Experience points awarded (number)
     - Certificates (toggle)
     - Write-up submission (toggle - encourage learning)
-  
+
   * Section 8: Visibility & Access
     - Is public (toggle - visible to non-members)
     - Allow spectators (toggle - can view but not participate)
     - Live leaderboard visibility (select: Public, Participants only, Hidden until end)
     - Challenge visibility (select: All visible, Progressive unlock, Hidden)
-  
+
   * Section 9: Platform Settings
     - Challenge infrastructure (text - e.g., AWS instances, Docker containers)
     - Flag format (text - regex, e.g., SLAU{.*})
     - Case sensitive flags (toggle)
     - Rate limiting (number - submissions per minute)
     - Collaboration rules (textarea)
-  
+
   * Status (auto-set based on dates)
 
 - Filament Form: Create/Edit Challenge
@@ -1691,7 +2534,7 @@ php
     - Difficulty (select: Easy, Medium, Hard)
     - Points (number - static or starting value for dynamic)
     - Author (select user - default to creator)
-  
+
   * Section 2: Challenge Files & Resources
     - Challenge files (file upload - multiple)
       - Downloadable for participants
@@ -1699,14 +2542,14 @@ php
       - For infrastructure setup (not visible to participants)
     - Challenge URL (text - if challenge is hosted)
     - Connection info (textarea - e.g., nc server.com 1337)
-  
+
   * Section 3: Flag & Validation
     - Flag (text - encrypted in database)
     - Flag format (text - e.g., SLAU{...}, regex validation)
     - Flag is case-sensitive (toggle)
     - Multiple valid flags (repeater - for variations)
     - Custom validation script (code editor - advanced)
-  
+
   * Section 4: Hints System
     - Hints enabled (toggle)
     - Hints (repeater)
@@ -1714,32 +2557,32 @@ php
       - Cost (points deducted)
       - Unlock condition (optional - e.g., after 30 mins, after X solves)
       - Order (which hint comes first)
-  
+
   * Section 5: Scoring Configuration
     - Minimum points (for dynamic scoring)
     - Decay formula (for dynamic - adjust based on solves)
     - First blood bonus (points)
-  
+
   * Section 6: Challenge Metadata
     - Tags (tags input - for categorization)
     - Recommended tools (tags input)
     - Learning objectives (textarea)
     - Intended solve time (number - minutes)
     - Prerequisites (textarea - what participants should know)
-  
+
   * Section 7: Visibility & Unlocking
     - Visible from start (toggle)
     - Unlock after (number of other challenges solved)
     - Unlock at (specific time)
     - Max solves (optional - for limited flag challenges)
-  
+
   * Section 8: Write-up & Solution
     - Official solution (rich text - hidden from participants)
     - Solution files (file upload)
     - Intended solution steps (textarea)
     - Alternative solutions (textarea)
     - Common mistakes (textarea)
-  
+
   * Status (Draft, Testing, Active, Solved, Archived)
 
 - Filament Table: Challenges (Relation Manager on CTF)
@@ -2718,7 +3561,7 @@ Filament Components
       - Button text
       - Button link
       - Button style (primary, secondary, success, danger)
-  
+
   * Section 2: Target Audience
     - Send to (radio buttons):
       - All members
@@ -2733,7 +3576,7 @@ Filament Components
     - Exclude users (multi-select - optional)
     - Estimated recipients (auto-calculated display)
     - Preview audience list (expandable table)
-  
+
   * Section 3: Delivery Channels
     - In-app notification (toggle - default ON)
       - Show banner on login (toggle)
@@ -2751,7 +3594,7 @@ Filament Components
     - Post to social media (toggle)
       - Platforms (checkboxes: Facebook, Twitter/X, Instagram, LinkedIn)
       - Auto-post or draft (radio)
-  
+
   * Section 4: Scheduling & Delivery
     - Send timing (radio):
       - Send immediately upon publish
@@ -2764,7 +3607,7 @@ Filament Components
     - Expiration date (date picker - optional)
       - Auto-archive after this date
       - Hide from announcement board
-  
+
   * Section 5: Engagement Tracking
     - Track opens/views (toggle - default ON)
     - Track link clicks (toggle - default ON)
@@ -2773,7 +3616,7 @@ Filament Components
       - Track who acknowledged
     - Allow comments (toggle)
     - Allow reactions (toggle: 👍 ❤️ 😮 🎉 😕)
-  
+
   * Section 6: Attachments & Resources
     - Attachments (file upload - multiple)
       - Max 10MB per file
@@ -2781,7 +3624,7 @@ Filament Components
     - Related resources (multi-select from library)
     - Related events (multi-select)
     - Related projects (multi-select)
-  
+
   * Section 7: Templates & Formatting
     - Use template (select from saved templates)
     - Save as template (toggle + template name)
@@ -2789,13 +3632,13 @@ Filament Components
       - Desktop preview
       - Mobile preview
       - Email preview
-  
+
   * Section 8: Permissions & Review
     - Requires approval (toggle - for certain senders)
       - Approval workflow (select approver)
     - Allow edits after sending (toggle - with versioning)
     - Mark as official (toggle - adds "Official Club Communication" badge)
-  
+
   * Status (auto-managed)
     - Draft
     - Pending Approval
@@ -3777,31 +4620,31 @@ Engagement Score = weighted_sum([
     Event Attendance (25%):
       - Registered events attended / total registered
       - Bonus for workshops and competitive events
-    
+
     Project Participation (20%):
       - Active projects count
       - Contributions to projects
       - Project completion
-    
+
     CTF Performance (15%):
       - Competitions participated
       - Challenges solved
       - Team contributions
-    
+
     Learning Activity (15%):
       - Resources viewed/completed
       - Learning paths progress
       - Certifications earned
-    
+
     Meeting Attendance (10%):
       - Meeting attendance rate
       - Bonus for required meetings
-    
+
     Community Engagement (10%):
       - Comments and discussions
       - Resource contributions
       - Helping other members
-    
+
     Responsiveness (5%):
       - Announcement read rate
       - RSVP promptness
@@ -4101,11 +4944,11 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
     - Rarity (select: Common, Uncommon, Rare, Epic, Legendary)
     - Icon/image (file upload - SVG or PNG)
     - Icon color scheme (color pickers for gradient)
-  
+
   * Section 2: Requirements
     - Award type (select: Automatic, Manual, Hybrid)
     - Criteria (rich text - describe what's needed)
-    
+
     If Automatic:
       - Trigger event (select: Event attended, Project completed, CTF win, etc.)
       - Conditions (repeater)
@@ -4116,12 +4959,12 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
         - "Attend 10 events" → event_attendance >= 10
         - "Solve 50 CTF challenges" → ctf_challenges_solved >= 50
         - "Complete a learning path" → learning_paths_completed >= 1
-    
+
     If Manual:
       - Who can award (select roles)
       - Requires approval from (select role)
       - Nomination process (toggle)
-  
+
   * Section 3: Rewards
     - Experience points awarded (number)
     - Unlocks feature (optional)
@@ -4130,14 +4973,14 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
       - Priority event registration
     - Displayed on profile (toggle)
     - Announcement when earned (toggle)
-  
+
   * Section 4: Visibility & Status
     - Is active (toggle)
     - Is visible before earning (toggle - "locked" badges)
     - Show progress toward badge (toggle)
     - Available from date (date picker - seasonal badges)
     - Available until date (date picker)
-  
+
   * Section 5: Badge Tiers (Optional)
     - For progressive badges (Bronze, Silver, Gold)
     - Tier requirements (repeater)
@@ -4255,7 +5098,7 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
     - Social links (GitHub, LinkedIn, Twitter, Personal site)
     - Contact button (if allowed)
     - Follow/Connect button
-  
+
   * Quick Stats Cards:
     - Total XP
     - Current rank
@@ -4263,20 +5106,20 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
     - Projects involved
     - CTF challenges solved
     - Resources contributed
-  
+
   * Badges Showcase:
     - Earned badges (displayed prominently)
     - Locked badges (grayed out with unlock requirements)
     - Rarest badge highlight
     - Toggle between grid and list view
-  
+
   * Skills Section:
     - Skills with proficiency levels (bars)
     - Endorsement counts per skill
     - Endorse button (for other members)
     - Grouped by category
     - Add skill button (own profile only)
-  
+
   * Activity Timeline:
     - Recent achievements
     - Events attended
@@ -4286,7 +5129,7 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
     - Chronological feed with icons
     - Filterable by type
     - Load more pagination
-  
+
   * Portfolio Section:
     - Featured projects
     - CTF write-ups
@@ -4294,21 +5137,21 @@ Would you like me to continue with Phase 13 (User Profile & Gamification)?
     - Resources uploaded
     - GitHub contributions (if linked)
     - Certificates earned
-  
+
   * Achievements & Recognition:
     - Special awards
     - Competition wins
     - Leadership roles held
     - Certificates
     - Honors and mentions
-  
+
   * Statistics Tab:
     - Detailed stats and charts
     - Activity heatmap (GitHub-style)
     - XP over time chart
     - Category breakdowns
     - Personal bests
-  
+
   * Privacy Controls (Own Profile):
     - Toggle profile visibility (public, members-only, private)
     - Choose what to display
@@ -4940,14 +5783,14 @@ Multipliers:
     - Contact phone (phone)
     - Office location (text)
     - Office hours (textarea or time range repeater)
-  
+
   * Academic settings:
     - Current academic year (text)
     - Current semester (select: Fall, Spring, Summer)
     - Semester start date (date)
     - Semester end date (date)
     - Exam periods (date ranges)
-  
+
   * Time & locale:
     - Default timezone (select)
     - Date format (select)
@@ -4963,7 +5806,7 @@ Multipliers:
     - Banner image (for website header)
     - Default event image
     - Email header image
-  
+
   * Colors (color pickers):
     - Primary color
     - Secondary color
@@ -4971,12 +5814,12 @@ Multipliers:
     - Success color
     - Warning color
     - Danger color
-  
+
   * Theme:
     - Default theme (light/dark/auto)
     - Allow theme switching (toggle)
     - Custom CSS (code editor - advanced)
-  
+
   * Typography:
     - Heading font (select)
     - Body font (select)
@@ -4997,7 +5840,7 @@ Multipliers:
     - Comments & discussions
     - Member directory
     - Public website/landing page
-  
+
   * Feature-specific settings:
     - Event auto-archive after X days
     - Project
@@ -5015,14 +5858,14 @@ Multipliers:
     - Required fields during registration
     - Welcome email (toggle)
     - Probation period (number - days)
-  
+
   * Membership rules:
     - Max absences allowed per semester
     - Fine for unexcused absence (currency)
     - Inactivity threshold (days)
     - Auto-suspend after inactivity (toggle)
     - Alumni conversion (auto after graduation)
-  
+
   * Member levels:
     - Use level system (toggle)
     - Starting level
@@ -5037,13 +5880,13 @@ Multipliers:
     - Allow waitlist by default
     - No-show fine amount
     - Cancel penalty grace period (hours)
-  
+
   * Attendance:
     - Attendance tracking required
     - QR code check-in enabled
     - Late arrival threshold (minutes)
     - Early departure threshold (minutes)
-  
+
   * Reminders:
     - Send reminder 24h before (toggle)
     - Send reminder 1h before (toggle)
@@ -5055,13 +5898,13 @@ Multipliers:
     - Budget categories (repeater: name, allocated amount)
     - Over-budget alerts (toggle)
     - Alert threshold (percentage)
-  
+
   * Transactions:
     - Approval required for amounts > (currency)
     - Approvers (select roles)
     - Receipt required for amounts > (currency)
     - Fiscal year start month
-  
+
   * Fines:
     - Fines system enabled (toggle)
     - Default fine amounts (repeater by type)
@@ -5077,7 +5920,7 @@ Multipliers:
     - First blood bonus (points)
     - Flag format regex
     - Rate limit (submissions per minute)
-  
+
   * Challenges:
     - Auto-unlock progressive challenges
     - Hints system enabled
@@ -5092,7 +5935,7 @@ Multipliers:
     - Email service (select: SMTP, SendGrid, Mailgun, SES)
     - Service credentials (encrypted fields)
     - Test email button
-  
+
   * Email templates (list with edit):
     - Welcome email
     - Email verification
@@ -5105,7 +5948,7 @@ Multipliers:
     - Badge earned
     - Level up
     - Custom templates (add more)
-  
+
   * Notification defaults:
     - Default notification channels by type
     - Digest schedule
@@ -5123,14 +5966,14 @@ Multipliers:
     - Session timeout (minutes)
     - Max login attempts before lockout
     - Lockout duration (minutes)
-  
+
   * Privacy:
     - Default profile visibility (public/members/private)
     - GDPR mode (toggle - additional privacy features)
     - Data retention period (days - for logs)
     - Allow data export (toggle)
     - Cookie consent required (toggle)
-  
+
   * Content moderation:
     - Comments require approval (toggle)
     - Profanity filter (toggle)
@@ -5144,18 +5987,18 @@ Multipliers:
     - Instagram handle
     - LinkedIn page URL
     - Auto-post announcements (toggle per platform)
-  
+
   * External services:
     - GitHub organization
     - Slack workspace
     - Discord server
     - Google Calendar integration
     - Zoom API credentials
-  
+
   * Analytics:
     - Google Analytics ID
     - Track anonymous usage (toggle)
-  
+
   * Cloud storage:
     - AWS S3 credentials
     - Storage quota (GB)
@@ -5169,12 +6012,12 @@ Multipliers:
     - Backup location (local/S3)
     - Manual backup button
     - Restore from backup (select backup + confirm)
-  
+
   * Maintenance mode:
     - Enable maintenance mode (toggle)
     - Maintenance message (textarea)
     - Whitelist IPs (repeater - allow admins)
-  
+
   * System health:
     - Disk usage (display)
     - Database size (display)
@@ -5183,7 +6026,7 @@ Multipliers:
     - Clear logs button (with confirmation)
     - Optimize database button
     - Run migrations button (with confirmation)
-  
+
   * Logs viewer:
     - Application logs
     - Error logs
@@ -5197,21 +6040,21 @@ Multipliers:
     - API rate limiting (requests per minute)
     - API key management
     - Webhook URLs
-  
+
   * Developer mode:
     - Debug mode (toggle - only in non-production)
     - Query logging (toggle)
     - Email testing mode (catch-all)
-  
+
   * Custom fields:
     - Add custom fields to models (user, event, project)
     - Field name, type, validation
-  
+
   * Scheduled tasks:
     - View cron schedule
     - Run task manually
     - Enable/disable specific tasks
-  
+
   * Import/Export:
     - Export all data (JSON/CSV)
     - Import data (from file)

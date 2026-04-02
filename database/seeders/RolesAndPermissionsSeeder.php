@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -110,6 +110,22 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage_permissions',
             'view_audit_logs',
             'manage_settings',
+
+            // Content & Course Materials
+            'content.view',
+            'content.create',
+            'content.edit',
+            'content.delete',
+
+            // Teacher & Education
+            'teacher.events.view',
+            'teacher.events.rsvp',
+            'teacher.reports.view',
+            'teacher.dashboard.view',
+
+            // Student Portfolios
+            'portfolio.view',
+            'portfolio.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -142,6 +158,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_reports', 'export_reports', 'view_analytics',
             'access_admin_panel', 'view_audit_logs',
             'vote_in_elections', // President can vote as an active member
+            // Content & Course Materials
+            'content.view', 'content.create', 'content.edit', 'content.delete',
+            // Teacher & Education
+            'teacher.events.view', 'teacher.events.rsvp', 'teacher.reports.view', 'teacher.dashboard.view',
+            // Student Portfolios
+            'portfolio.view', 'portfolio.manage',
         ]);
 
         // 3. VICE PRESIDENT - Assists president
@@ -256,6 +278,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_projects',
             'view_trainings',
             'vote_in_elections',
+            // Content & Course Materials
+            'content.view',
+            // Teacher & Education
+            'teacher.events.view', 'teacher.events.rsvp',
+            // Student Portfolios
+            'portfolio.view',
         ]);
 
         // 12. ASSOCIATE MEMBER - Limited access

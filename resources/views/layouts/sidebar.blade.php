@@ -178,7 +178,7 @@
                                     'xl:justify-center' : 'justify-start'
                                 ]">
                                 <span :class="isActive('/my-events') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z" fill="currentColor"></path></svg>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5 14.25H18.5C18.9142 4.75 19.25 5.08579 19.25 5.5V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z" fill="currentColor"></path></svg>
                                 </span>
                                 <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
                                     class="menu-item-text flex items-center gap-2">
@@ -186,6 +186,83 @@
                                 </span>
                             </a>
                         </li>
+
+                        <!-- Teacher Menu Items -->
+                        @can('content.view')
+                            <li>
+                                <a href="{{ route('teacher.content') }}" wire:navigate class="menu-item group"
+                                    :class="[
+                                        isActive('/teacher/content') ? 'menu-item-active' : 'menu-item-inactive',
+                                        (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
+                                        'xl:justify-center' : 'justify-start'
+                                    ]">
+                                    <span :class="isActive('/teacher/content') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="currentColor"></path></svg>
+                                    </span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                                        class="menu-item-text flex items-center gap-2">
+                                        Course Materials
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('teacher.events.view')
+                            <li>
+                                <a href="{{ route('teacher.events') }}" wire:navigate class="menu-item group"
+                                    :class="[
+                                        isActive('/teacher/events') ? 'menu-item-active' : 'menu-item-inactive',
+                                        (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
+                                        'xl:justify-center' : 'justify-start'
+                                    ]">
+                                    <span :class="isActive('/teacher/events') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" fill="currentColor"></path></svg>
+                                    </span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                                        class="menu-item-text flex items-center gap-2">
+                                        My Events
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('teacher.reports.view')
+                            <li>
+                                <a href="{{ route('teacher.analytics') }}" wire:navigate class="menu-item group"
+                                    :class="[
+                                        isActive('/teacher/analytics') ? 'menu-item-active' : 'menu-item-inactive',
+                                        (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
+                                        'xl:justify-center' : 'justify-start'
+                                    ]">
+                                    <span :class="isActive('/teacher/analytics') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V3h-8v18zm0-8h8v-6h-8v6z" fill="currentColor"></path></svg>
+                                    </span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                                        class="menu-item-text flex items-center gap-2">
+                                        Analytics
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('portfolio.view')
+                            <li>
+                                <a href="{{ route('teacher.portfolios') }}" wire:navigate class="menu-item group"
+                                    :class="[
+                                        isActive('/teacher/portfolios') ? 'menu-item-active' : 'menu-item-inactive',
+                                        (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
+                                        'xl:justify-center' : 'justify-start'
+                                    ]">
+                                    <span :class="isActive('/teacher/portfolios') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" fill="currentColor"></path></svg>
+                                    </span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                                        class="menu-item-text flex items-center gap-2">
+                                        Portfolios
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
 
                         <!-- Financial Management - Available to treasurer, president, super-admin -->
                         @hasanyrole('treasurer|president|super-admin')
