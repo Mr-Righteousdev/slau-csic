@@ -13,7 +13,6 @@ use App\Livewire\Admin\Meetings;
 use App\Livewire\Admin\RolePermissionManager;
 use App\Livewire\Admin\TransactionManagement;
 use App\Livewire\Admin\TreasurerDashboard;
-// use App\Http\Controllers\Admin\MeetingController;
 use App\Livewire\EventDetails;
 use App\Livewire\EventRegistration;
 use App\Livewire\MyEvents;
@@ -43,6 +42,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/fines', \App\Livewire\MemberFinesDashboard::class)->name('members.fines');
     Route::get('/events/{event:slug}/register', EventRegistration::class)->name('events.register');
     Route::get('/my-events', MyEvents::class)->name('my-events');
+
+    // Teacher Routes
+    Route::middleware(['can:content.view'])->group(function () {
+        Route::get('/teacher/content', ManageContent::class)->name('teacher.content');
+    });
+
+    Route::middleware(['can:teacher.events.view'])->group(function () {
+        Route::get('/teacher/events', TeacherEvents::class)->name('teacher.events');
+    });
+
+    Route::middleware(['can:teacher.reports.view'])->group(function () {
+        Route::get('/teacher/analytics', TeacherAnalytics::class)->name('teacher.analytics');
+    });
+
+    Route::middleware(['can:portfolio.view'])->group(function () {
+        Route::get('/teacher/portfolios', ManagePortfolios::class)->name('teacher.portfolios');
+    });
 
 });
 
