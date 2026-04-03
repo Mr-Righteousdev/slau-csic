@@ -1,162 +1,301 @@
 @extends('layouts.fullscreen-layout')
 
 @section('content')
-    <div class="relative z-1 bg-white p-6 sm:p-0 dark:bg-gray-900">
-        <div class="flex h-screen w-full flex-col justify-center sm:p-0 lg:flex-row dark:bg-gray-900">
-            <!-- Form -->
-            <div class="flex w-full flex-1 flex-col lg:w-1/2">
-                <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-                    <div class="mb-5 sm:mb-8">
-                        <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
-                            Sign Up
-                        </h1>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Enter your details to create an account!
+    <div class="portal-shell relative min-h-screen overflow-hidden">
+        <div class="portal-grid absolute inset-0 opacity-40"></div>
+
+        <div class="relative z-10 flex min-h-screen flex-col lg:flex-row">
+            <section class="flex w-full lg:w-[54%]">
+                <div class="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-12 sm:px-10 lg:px-14">
+                    <div class="mb-8 flex items-center justify-between gap-4">
+                        <a href="{{ route('home') }}" class="inline-flex items-center gap-3">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1.5 shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+                                <img src="{{ asset('images/club/logo1.jpg') }}" alt="SLAU Cybersecurity Club logo" class="h-9 w-9 object-contain">
+                            </span>
+                            <span>
+                                <span class="block text-sm font-semibold uppercase tracking-[0.18em]" style="color: var(--portal-primary);">SLAU</span>
+                                <span class="portal-muted block text-xs">Cybersecurity &amp; Innovations Club</span>
+                            </span>
+                        </a>
+
+                        <button type="button" class="portal-toggle text-xs font-medium uppercase tracking-[0.18em]" data-theme-toggle>
+                            <span data-theme-icon>☾</span>
+                            <span data-theme-label>Dark</span>
+                        </button>
+                    </div>
+
+                    <div class="mb-8">
+                        <p class="text-sm font-medium uppercase tracking-[0.28em]" style="color: var(--portal-secondary);">Member Registration</p>
+                        <h1 class="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl" style="color: var(--portal-text);">Create your member record</h1>
+                        <p class="portal-copy mt-4 max-w-2xl text-sm leading-7 sm:text-base">
+                            Register with the core academic, contact, and profile details the club needs for membership review, communication, and directory visibility.
                         </p>
                     </div>
-                    <div>
-                        <form method="POST" action="{{ route('register') }}">
+
+                    <div class="portal-card rounded-md p-6 sm:p-8">
+                        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" class="space-y-6">
                             @csrf
-                            <div class="space-y-5">
-                                <!-- Full Name -->
-                                <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        Full Name<span class="text-error-500">*</span>
-                                    </label>
-                                    <input type="text" id="name" name="name" value="{{ old('name') }}"
-                                        placeholder="Enter your full name" autofocus
-                                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('name') border-error-500 @enderror" />
+
+                            <div class="grid gap-5 md:grid-cols-2">
+                                <div class="md:col-span-2">
+                                    <label for="name" class="portal-copy mb-2 block text-sm font-medium">Full name <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Your full name" autofocus class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('name') border-error-500 @enderror" />
                                     @error('name')
-                                        <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <!-- Email -->
+
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        Email<span class="text-error-500">*</span>
-                                    </label>
-                                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email"
-                                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('email') border-error-500 @enderror" />
+                                    <label for="email" class="portal-copy mb-2 block text-sm font-medium">Email address <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="name@slau.ac.ug" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('email') border-error-500 @enderror" />
                                     @error('email')
-                                        <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <!-- Password -->
+
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        Password<span class="text-error-500">*</span>
-                                    </label>
+                                    <label for="student_id" class="portal-copy mb-2 block text-sm font-medium">Student ID <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="student_id" name="student_id" value="{{ old('student_id') }}" placeholder="SLAU registration number" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('student_id') border-error-500 @enderror" />
+                                    @error('student_id')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="phone" class="portal-copy mb-2 block text-sm font-medium">Phone number <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="07xx xxx xxx" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('phone') border-error-500 @enderror" />
+                                    @error('phone')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="program" class="portal-copy mb-2 block text-sm font-medium">Programme <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="program" name="program" value="{{ old('program') }}" placeholder="Bachelor of Information Technology" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('program') border-error-500 @enderror" />
+                                    @error('program')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="faculty" class="portal-copy mb-2 block text-sm font-medium">Faculty or school</label>
+                                    <input type="text" id="faculty" name="faculty" value="{{ old('faculty') }}" placeholder="Faculty of Science and Technology" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('faculty') border-error-500 @enderror" />
+                                    @error('faculty')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="year_of_study" class="portal-copy mb-2 block text-sm font-medium">Year of study <span style="color: var(--portal-primary);">*</span></label>
+                                    <select id="year_of_study" name="year_of_study" class="portal-field h-12 w-full rounded-sm px-4 text-sm focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('year_of_study') border-error-500 @enderror">
+                                        <option value="">Select year</option>
+                                        @for ($year = 1; $year <= 6; $year++)
+                                            <option value="{{ $year }}" @selected(old('year_of_study') == $year)>Year {{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                    @error('year_of_study')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="date_of_birth" class="portal-copy mb-2 block text-sm font-medium">Date of birth <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}" class="portal-field h-12 w-full rounded-sm px-4 text-sm focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('date_of_birth') border-error-500 @enderror" />
+                                    @error('date_of_birth')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="gender" class="portal-copy mb-2 block text-sm font-medium">Gender <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="gender" name="gender" value="{{ old('gender') }}" placeholder="Gender" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('gender') border-error-500 @enderror" />
+                                    @error('gender')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="residence" class="portal-copy mb-2 block text-sm font-medium">Residence <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="residence" name="residence" value="{{ old('residence') }}" placeholder="Hostel, hall, or area of residence" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('residence') border-error-500 @enderror" />
+                                    @error('residence')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="headline" class="portal-copy mb-2 block text-sm font-medium">Professional headline <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="headline" name="headline" value="{{ old('headline') }}" placeholder="Aspiring SOC analyst and web security learner" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('headline') border-error-500 @enderror" />
+                                    @error('headline')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="specialization_track" class="portal-copy mb-2 block text-sm font-medium">Current focus area</label>
+                                    <input type="text" id="specialization_track" name="specialization_track" value="{{ old('specialization_track') }}" placeholder="Web security, digital forensics, secure development" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('specialization_track') border-error-500 @enderror" />
+                                    @error('specialization_track')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="emergency_contact_name" class="portal-copy mb-2 block text-sm font-medium">Emergency contact name <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="emergency_contact_name" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}" placeholder="Emergency contact full name" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('emergency_contact_name') border-error-500 @enderror" />
+                                    @error('emergency_contact_name')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="emergency_contact_phone" class="portal-copy mb-2 block text-sm font-medium">Emergency contact phone <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="text" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}" placeholder="Emergency contact phone" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('emergency_contact_phone') border-error-500 @enderror" />
+                                    @error('emergency_contact_phone')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="github_username" class="portal-copy mb-2 block text-sm font-medium">GitHub username</label>
+                                    <input type="text" id="github_username" name="github_username" value="{{ old('github_username') }}" placeholder="github username" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('github_username') border-error-500 @enderror" />
+                                    @error('github_username')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="linkedin_url" class="portal-copy mb-2 block text-sm font-medium">LinkedIn profile</label>
+                                    <input type="url" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url') }}" placeholder="https://linkedin.com/in/..." class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('linkedin_url') border-error-500 @enderror" />
+                                    @error('linkedin_url')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="discord_username" class="portal-copy mb-2 block text-sm font-medium">Discord username</label>
+                                    <input type="text" id="discord_username" name="discord_username" value="{{ old('discord_username') }}" placeholder="@username" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('discord_username') border-error-500 @enderror" />
+                                    @error('discord_username')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="bio" class="portal-copy mb-2 block text-sm font-medium">Short professional bio <span style="color: var(--portal-primary);">*</span></label>
+                                    <textarea id="bio" name="bio" rows="4" placeholder="Summarise your interests, what you want to learn, and how you want to contribute to the club." class="portal-field w-full rounded-sm px-4 py-3 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('bio') border-error-500 @enderror">{{ old('bio') }}</textarea>
+                                    @error('bio')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="notable_problems_solved" class="portal-copy mb-2 block text-sm font-medium">Problems solved or security tasks completed</label>
+                                    <textarea id="notable_problems_solved" name="notable_problems_solved" rows="3" placeholder="List practical problems you have solved, labs you have completed, or club challenges you have handled." class="portal-field w-full rounded-sm px-4 py-3 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('notable_problems_solved') border-error-500 @enderror">{{ old('notable_problems_solved') }}</textarea>
+                                    @error('notable_problems_solved')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="achievements_summary" class="portal-copy mb-2 block text-sm font-medium">Projects done or progress record</label>
+                                    <textarea id="achievements_summary" name="achievements_summary" rows="3" placeholder="Add any projects built, competition progress, or notable learning milestones you want attached to your profile." class="portal-field w-full rounded-sm px-4 py-3 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('achievements_summary') border-error-500 @enderror">{{ old('achievements_summary') }}</textarea>
+                                    @error('achievements_summary')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="competition_rank" class="portal-copy mb-2 block text-sm font-medium">Current challenge ranking</label>
+                                    <input type="text" id="competition_rank" name="competition_rank" value="{{ old('competition_rank') }}" placeholder="Example: Top 10 internal CTF standings" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('competition_rank') border-error-500 @enderror" />
+                                    @error('competition_rank')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="profile_photo" class="portal-copy mb-2 block text-sm font-medium">Passport-style photo <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="file" id="profile_photo" name="profile_photo" accept="image/*" class="portal-field flex h-12 w-full items-center rounded-sm px-3 py-2 text-sm file:mr-4 file:rounded-sm file:border-0 file:bg-emerald-400/15 file:px-3 file:py-2 file:font-medium file:text-emerald-200 @error('profile_photo') border-error-500 @enderror" />
+                                    <p class="portal-muted mt-2 text-xs">Upload a clear headshot. This will be used in the member directory and public member profile.</p>
+                                    @error('profile_photo')
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="password" class="portal-copy mb-2 block text-sm font-medium">Password <span style="color: var(--portal-primary);">*</span></label>
                                     <div x-data="{ showPassword: false }" class="relative">
-                                        <input :type="showPassword ? 'text' : 'password'" name="password" placeholder="Enter your password"
-                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pr-11 pl-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('password') border-error-500 @enderror" />
-                                        <span @click="showPassword = !showPassword"
-                                            class="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400">
-                                            <svg x-show="!showPassword" class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0002 13.8619C7.23361 13.8619 4.86803 12.1372 3.92328 9.70241C4.86804 7.26761 7.23361 5.54297 10.0002 5.54297C12.7667 5.54297 15.1323 7.26762 16.0771 9.70243C15.1323 12.1372 12.7667 13.8619 10.0002 13.8619ZM10.0002 4.04297C6.48191 4.04297 3.49489 6.30917 2.4155 9.4593C2.3615 9.61687 2.3615 9.78794 2.41549 9.94552C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C13.5184 15.3619 16.5055 13.0957 17.5849 9.94555C17.6389 9.78797 17.6389 9.6169 17.5849 9.45932C16.5055 6.30919 13.5184 4.04297 10.0002 4.04297ZM9.99151 7.84413C8.96527 7.84413 8.13333 8.67606 8.13333 9.70231C8.13333 10.7286 8.96527 11.5605 9.99151 11.5605H10.0064C11.0326 11.5605 11.8646 10.7286 11.8646 9.70231C11.8646 8.67606 11.0326 7.84413 10.0064 7.84413H9.99151Z" fill="#98A2B3" />
-                                            </svg>
-                                            <svg x-show="showPassword" class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.63803 3.57709C4.34513 3.2842 3.87026 3.2842 3.57737 3.57709C3.28447 3.86999 3.28447 4.34486 3.57737 4.63775L4.85323 5.91362C3.74609 6.84199 2.89363 8.06395 2.4155 9.45936C2.3615 9.61694 2.3615 9.78801 2.41549 9.94558C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C11.255 15.3619 12.4422 15.0737 13.4994 14.5598L15.3625 16.4229C15.6554 16.7158 16.1302 16.7158 16.4231 16.4229C16.716 16.13 16.716 15.6551 16.4231 15.3622L4.63803 3.57709ZM12.3608 13.4212L10.4475 11.5079C10.3061 11.5423 10.1584 11.5606 10.0064 11.5606H9.99151C8.96527 11.5606 8.13333 10.7286 8.13333 9.70237C8.13333 9.5461 8.15262 9.39434 8.18895 9.24933L5.91885 6.97923C5.03505 7.69015 4.34057 8.62704 3.92328 9.70247C4.86803 12.1373 7.23361 13.8619 10.0002 13.8619C10.8326 13.8619 11.6287 13.7058 12.3608 13.4212ZM16.0771 9.70249C15.7843 10.4569 15.3552 11.1432 14.8199 11.7311L15.8813 12.7925C16.6329 11.9813 17.2187 11.0143 17.5849 9.94561C17.6389 9.78803 17.6389 9.61696 17.5849 9.45938C16.5055 6.30925 13.5184 4.04303 10.0002 4.04303C9.13525 4.04303 8.30244 4.17999 7.52218 4.43338L8.75139 5.66259C9.1556 5.58413 9.57311 5.54303 10.0002 5.54303C12.7667 5.54303 15.1323 7.26768 16.0771 9.70249Z" fill="#98A2B3" />
-                                            </svg>
-                                        </span>
+                                        <input :type="showPassword ? 'text' : 'password'" id="password" name="password" placeholder="Create a secure password" class="portal-field h-12 w-full rounded-sm px-4 pr-12 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10 @error('password') border-error-500 @enderror" />
+                                        <button type="button" @click="showPassword = !showPassword" class="portal-muted absolute inset-y-0 right-4 inline-flex items-center">Show</button>
                                     </div>
                                     @error('password')
-                                        <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-error-400">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <!-- Confirm Password -->
+
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        Confirm Password<span class="text-error-500">*</span>
-                                    </label>
-                                    <div x-data="{ showPassword: false }" class="relative">
-                                        <input :type="showPassword ? 'text' : 'password'" name="password_confirmation" placeholder="Confirm your password"
-                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pr-11 pl-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
-                                        <span @click="showPassword = !showPassword"
-                                            class="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400">
-                                            <svg x-show="!showPassword" class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0002 13.8619C7.23361 13.8619 4.86803 12.1372 3.92328 9.70241C4.86804 7.26761 7.23361 5.54297 10.0002 5.54297C12.7667 5.54297 15.1323 7.26762 16.0771 9.70243C15.1323 12.1372 12.7667 13.8619 10.0002 13.8619ZM10.0002 4.04297C6.48191 4.04297 3.49489 6.30917 2.4155 9.4593C2.3615 9.61687 2.3615 9.78794 2.41549 9.94552C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C13.5184 15.3619 16.5055 13.0957 17.5849 9.94555C17.6389 9.78797 17.6389 9.6169 17.5849 9.45932C16.5055 6.30919 13.5184 4.04297 10.0002 4.04297ZM9.99151 7.84413C8.96527 7.84413 8.13333 8.67606 8.13333 9.70231C8.13333 10.7286 8.96527 11.5605 9.99151 11.5605H10.0064C11.0326 11.5605 11.8646 10.7286 11.8646 9.70231C11.8646 8.67606 11.0326 7.84413 10.0064 7.84413H9.99151Z" fill="#98A2B3" />
-                                            </svg>
-                                            <svg x-show="showPassword" class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.63803 3.57709C4.34513 3.2842 3.87026 3.2842 3.57737 3.57709C3.28447 3.86999 3.28447 4.34486 3.57737 4.63775L4.85323 5.91362C3.74609 6.84199 2.89363 8.06395 2.4155 9.45936C2.3615 9.61694 2.3615 9.78801 2.41549 9.94558C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C11.255 15.3619 12.4422 15.0737 13.4994 14.5598L15.3625 16.4229C15.6554 16.7158 16.1302 16.7158 16.4231 16.4229C16.716 16.13 16.716 15.6551 16.4231 15.3622L4.63803 3.57709ZM12.3608 13.4212L10.4475 11.5079C10.3061 11.5423 10.1584 11.5606 10.0064 11.5606H9.99151C8.96527 11.5606 8.13333 10.7286 8.13333 9.70237C8.13333 9.5461 8.15262 9.39434 8.18895 9.24933L5.91885 6.97923C5.03505 7.69015 4.34057 8.62704 3.92328 9.70247C4.86803 12.1373 7.23361 13.8619 10.0002 13.8619C10.8326 13.8619 11.6287 13.7058 12.3608 13.4212ZM16.0771 9.70249C15.7843 10.4569 15.3552 11.1432 14.8199 11.7311L15.8813 12.7925C16.6329 11.9813 17.2187 11.0143 17.5849 9.94561C17.6389 9.78803 17.6389 9.61696 17.5849 9.45938C16.5055 6.30925 13.5184 4.04303 10.0002 4.04303C9.13525 4.04303 8.30244 4.17999 7.52218 4.43338L8.75139 5.66259C9.1556 5.58413 9.57311 5.54303 10.0002 5.54303C12.7667 5.54303 15.1323 7.26768 16.0771 9.70249Z" fill="#98A2B3" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-                                <!-- Checkbox -->
-                                <div>
-                                    <div x-data="{ checkboxToggle: false }">
-                                        <label for="terms"
-                                            class="flex cursor-pointer items-start text-sm font-normal text-gray-700 select-none dark:text-gray-400">
-                                            <div class="relative">
-                                                <input type="checkbox" id="terms" name="terms" class="sr-only" @change="checkboxToggle = !checkboxToggle" />
-                                                <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' :
-                                                    'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                    class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
-                                                    <span :class="checkboxToggle ? '' : 'opacity-0'">
-                                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <p class="inline-block font-normal text-gray-500 dark:text-gray-400">
-                                                By creating an account means you agree to the
-                                                <span class="text-gray-800 dark:text-white/90">
-                                                    Terms and Conditions,
-                                                </span>
-                                                and our
-                                                <span class="text-gray-800 dark:text-white">
-                                                    Privacy Policy
-                                                </span>
-                                            </p>
-                                        </label>
-                                    </div>
-                                </div>
-                                <!-- Button -->
-                                <div>
-                                    <button type="submit"
-                                        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-medium text-white transition">
-                                        Sign Up
-                                    </button>
+                                    <label for="password_confirmation" class="portal-copy mb-2 block text-sm font-medium">Confirm password <span style="color: var(--portal-primary);">*</span></label>
+                                    <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Confirm your password" class="portal-field h-12 w-full rounded-sm px-4 text-sm placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10" />
                                 </div>
                             </div>
+
+                            <label class="portal-copy inline-flex items-start gap-3 text-sm">
+                                <input type="checkbox" id="terms" name="terms" value="1" class="mt-1 h-4 w-4 rounded-sm border-white/20 bg-transparent text-emerald-400 focus:ring-emerald-400/20" @checked(old('terms'))>
+                                <span>
+                                    I confirm that this information is accurate and I agree to the club platform terms, conduct expectations, and membership review process.
+                                </span>
+                            </label>
+                            @error('terms')
+                                <p class="text-sm text-error-400">{{ $message }}</p>
+                            @enderror
+
+                            <button type="submit" class="portal-button flex h-12 w-full items-center justify-center rounded-sm px-4 text-sm font-semibold transition">
+                                Submit Membership Registration
+                            </button>
                         </form>
-                        <div class="mt-5">
-                            <p class="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
-                                Already have an account?
-                                <a href="{{ route('login') }}" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">Sign In</a>
-                            </p>
+
+                        <div class="portal-muted mt-6 text-sm">
+                            Already have an account?
+                            <a href="{{ route('login') }}" class="font-medium hover:text-sky-200" style="color: var(--portal-secondary);">Sign in here</a>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="bg-brand-950 relative hidden h-full w-full items-center lg:grid lg:w-1/2 dark:bg-white/5">
-                <div class="z-1 flex items-center justify-center">
-                    <!-- ===== Common Grid Shape Start ===== -->
-                    <x-common.common-grid-shape />
-                    <div class="flex max-w-xs flex-col items-center">
-                        <a href="{{ route('dashboard') }}" class="mb-4 block">
-                            <img src="{{ asset('images/logo/auth-logo.svg') }}" alt="Logo" />
-                        </a>
-                        <p class="text-center text-gray-400 dark:text-white/60">
-                            Free and Open-Source Tailwind CSS Admin Dashboard Template
+            </section>
+
+            <section class="portal-shell-panel relative hidden lg:flex lg:w-[46%]">
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/club/certificate-team.jpg') }}');"></div>
+                <div class="portal-grid absolute inset-0 opacity-35"></div>
+
+                <div class="relative z-10 flex flex-1 items-end p-10 xl:p-14">
+                    <div class="max-w-xl">
+                        <div class="portal-badge">Member Intake</div>
+
+                        <h2 class="mt-6 text-4xl font-semibold tracking-tight text-white xl:text-5xl">
+                            Register once, then let the club build a stronger member directory around real people.
+                        </h2>
+
+                        <p class="portal-side-copy mt-5 max-w-lg text-base leading-8">
+                            The club uses registration details to review applications, manage member records, support communication, and publish public-facing bios only where visibility settings allow it.
                         </p>
+
+                        <div class="portal-side-grid mt-8 sm:grid-cols-2">
+                            <div class="portal-side-stat rounded-md">
+                                <div class="portal-side-stat-value">Photo</div>
+                                <div class="portal-side-stat-label">Directory ready</div>
+                            </div>
+                            <div class="portal-side-stat rounded-md">
+                                <div class="portal-side-stat-value">Bio</div>
+                                <div class="portal-side-stat-label">Public profile</div>
+                            </div>
+                            <div class="portal-side-stat rounded-md">
+                                <div class="portal-side-stat-value">Record</div>
+                                <div class="portal-side-stat-label">Club admin use</div>
+                            </div>
+                            <div class="portal-side-stat rounded-md">
+                                <div class="portal-side-stat-value">Pending</div>
+                                <div class="portal-side-stat-label">Membership review</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <!-- Toggler -->
-            <div class="fixed right-6 bottom-6 z-50">
-                <button
-                    class="bg-brand-500 hover:bg-brand-600 inline-flex size-14 items-center justify-center rounded-full text-white transition-colors"
-                    @click.prevent="$store.theme.toggle()">
-                    <svg class="hidden fill-current dark:block" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M9.99998 1.5415C10.4142 1.5415 10.75 1.87729 10.75 2.2915V3.5415C10.75 3.95572 10.4142 4.2915 9.99998 4.2915C9.58577 4.2915 9.24998 3.95572 9.24998 3.5415V2.2915C9.24998 1.87729 9.58577 1.5415 9.99998 1.5415ZM10.0009 6.79327C8.22978 6.79327 6.79402 8.22904 6.79402 10.0001C6.79402 11.7712 8.22978 13.207 10.0009 13.207C11.772 13.207 13.2078 11.7712 13.2078 10.0001C13.2078 8.22904 11.772 6.79327 10.0009 6.79327ZM5.29402 10.0001C5.29402 7.40061 7.40135 5.29327 10.0009 5.29327C12.6004 5.29327 14.7078 7.40061 14.7078 10.0001C14.7078 12.5997 12.6004 14.707 10.0009 14.707C7.40135 14.707 5.29402 12.5997 5.29402 10.0001ZM15.9813 5.08035C16.2742 4.78746 16.2742 4.31258 15.9813 4.01969C15.6884 3.7268 15.2135 3.7268 14.9207 4.01969L14.0368 4.90357C13.7439 5.19647 13.7439 5.67134 14.0368 5.96423C14.3297 6.25713 14.8045 6.25713 15.0974 5.96423L15.9813 5.08035ZM18.4577 10.0001C18.4577 10.4143 18.1219 10.7501 17.7077 10.7501H16.4577C16.0435 10.7501 15.7077 10.4143 15.7077 10.0001C15.7077 9.58592 16.0435 9.25013 16.4577 9.25013H17.7077C18.1219 9.25013 18.4577 9.58592 18.4577 10.0001ZM14.9207 15.9806C15.2135 16.2735 15.6884 16.2735 15.9813 15.9806C16.2742 15.6877 16.2742 15.2128 15.9813 14.9199L15.0974 14.036C14.8045 13.7431 14.3297 13.7431 14.0368 14.036C13.7439 14.3289 13.7439 14.8038 14.0368 15.0967L14.9207 15.9806ZM9.99998 15.7088C10.4142 15.7088 10.75 16.0445 10.75 16.4588V17.7088C10.75 18.123 10.4142 18.4588 9.99998 18.4588C9.58577 18.4588 9.24998 18.123 9.24998 17.7088V16.4588C9.24998 16.0445 9.58577 15.7088 9.99998 15.7088ZM5.96356 15.0972C6.25646 14.8043 6.25646 14.3295 5.96356 14.0366C5.67067 13.7437 5.1958 13.7437 4.9029 14.0366L4.01902 14.9204C3.72613 15.2133 3.72613 15.6882 4.01902 15.9811C4.31191 16.274 4.78679 16.274 5.07968 15.9811L5.96356 15.0972ZM4.29224 10.0001C4.29224 10.4143 3.95645 10.7501 3.54224 10.7501H2.29224C1.87802 10.7501 1.54224 10.4143 1.54224 10.0001C1.54224 9.58592 1.87802 9.25013 2.29224 9.25013H3.54224C3.95645 9.25013 4.29224 9.58592 4.29224 10.0001ZM4.9029 5.9637C5.1958 6.25659 5.67067 6.25659 5.96356 5.9637C6.25646 5.6708 6.25646 5.19593 5.96356 4.90303L5.07968 4.01915C4.78679 3.72626 4.31191 3.72626 4.01902 4.01915C3.72613 4.31204 3.72613 4.78692 4.01902 5.07981L4.9029 5.9637Z" fill="" />
-                    </svg>
-                    <svg class="fill-current dark:hidden" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.4547 11.97L18.1799 12.1611C18.265 11.8383 18.1265 11.4982 17.8401 11.3266C17.5538 11.1551 17.1885 11.1934 16.944 11.4207L17.4547 11.97ZM8.0306 2.5459L8.57989 3.05657C8.80718 2.81209 8.84554 2.44682 8.67398 2.16046C8.50243 1.8741 8.16227 1.73559 7.83948 1.82066L8.0306 2.5459ZM12.9154 13.0035C9.64678 13.0035 6.99707 10.3538 6.99707 7.08524H5.49707C5.49707 11.1823 8.81835 14.5035 12.9154 14.5035V13.0035ZM16.944 11.4207C15.8869 12.4035 14.4721 13.0035 12.9154 13.0035V14.5035C14.8657 14.5035 16.6418 13.7499 17.9654 12.5193L16.944 11.4207ZM16.7295 11.7789C15.9437 14.7607 13.2277 16.9586 10.0003 16.9586V18.4586C13.9257 18.4586 17.2249 15.7853 18.1799 12.1611L16.7295 11.7789ZM10.0003 16.9586C6.15734 16.9586 3.04199 13.8433 3.04199 10.0003H1.54199C1.54199 14.6717 5.32892 18.4586 10.0003 18.4586V16.9586ZM3.04199 10.0003C3.04199 6.77289 5.23988 4.05695 8.22173 3.27114L7.83948 1.82066C4.21532 2.77574 1.54199 6.07486 1.54199 10.0003H3.04199ZM6.99707 7.08524C6.99707 5.52854 7.5971 4.11366 8.57989 3.05657L7.48132 2.03522C6.25073 3.35885 5.49707 5.13487 5.49707 7.08524H6.99707Z" fill="" />
-                    </svg>
-                </button>
-            </div>
+            </section>
         </div>
     </div>
 @endsection

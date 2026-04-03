@@ -1,14 +1,18 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\ElectionManagementController;
+use App\Http\Controllers\Admin\EventAttendanceController;
+use App\Http\Controllers\ClubPortalController;
+use App\Http\Controllers\Frontend\ProjectsPageController;
+use App\Http\Controllers\Frontend\PublicMemberPageController;
 use App\Livewire\Admin\BudgetCategoryManagement;
+use App\Livewire\Admin\EventsManagement;
 use App\Livewire\Admin\FinancialReports;
 use App\Livewire\Admin\MeetingDetails;
 use App\Livewire\Admin\Meetings;
 use App\Livewire\Admin\RolePermissionManager;
 use App\Livewire\Admin\TransactionManagement;
 use App\Livewire\Admin\TreasurerDashboard;
-use App\Livewire\EventCalendar;
 // use App\Http\Controllers\Admin\MeetingController;
 use App\Livewire\EventDetails;
 use App\Livewire\EventRegistration;
@@ -22,8 +26,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/events/{event:slug}', EventDetails::class)->name('events.show');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [ClubPortalController::class, 'index'])->name('dashboard');
+    Route::get('/club/competitions', [ClubPortalController::class, 'competitions'])->name('portal.competitions');
+    Route::get('/club/voting', [ClubPortalController::class, 'voting'])->name('portal.voting');
+    Route::get('/club/ctf-arena', [ClubPortalController::class, 'ctfArena'])->name('portal.ctf');
+    Route::get('/club/classes', [ClubPortalController::class, 'classes'])->name('portal.classes');
+    Route::post('/club/voting/{election}', [ClubPortalController::class, 'castVote'])->name('portal.voting.cast');
+    Route::post('/club/resources/{clubResource}/progress', [ClubPortalController::class, 'updateProgress'])->name('portal.progress.update');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/user-profile', UserProfile::class)->name('user-profile');
     Route::get('/members', \App\Livewire\MemberDirectory::class)->name('members.directory');
     Route::get('/members/{user}', \App\Livewire\PublicMemberProfile::class)->name('members.profile');
@@ -42,6 +55,15 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // Route::get('/user-profile', UserProfile::class)->name('admin.users');
     Route::get('/users', ManageUsers::class)->name('admin.users');
+    Route::get('/events', EventsManagement::class)->name('admin.events');
+    Route::get('/events/{event}/attendance', [EventAttendanceController::class, 'show'])->name('admin.events.attendance');
+    Route::post('/events/{event}/attendance/{registration}', [EventAttendanceController::class, 'mark'])->name('admin.events.attendance.mark');
+    Route::get('/elections', [ElectionManagementController::class, 'index'])->name('admin.elections');
+    Route::post('/elections', [ElectionManagementController::class, 'store'])->name('admin.elections.store');
+    Route::get('/elections/{election}', [ElectionManagementController::class, 'show'])->name('admin.elections.show');
+    Route::put('/elections/{election}', [ElectionManagementController::class, 'update'])->name('admin.elections.update');
+    Route::post('/elections/{election}/candidates', [ElectionManagementController::class, 'storeCandidate'])->name('admin.elections.candidates.store');
+    Route::delete('/elections/{election}/candidates/{candidate}', [ElectionManagementController::class, 'destroyCandidate'])->name('admin.elections.candidates.destroy');
     Route::get('/treasurer-dashboard', TreasurerDashboard::class)->name('admin.treasurer-dashboard');
     Route::get('/financial-reports', FinancialReports::class)->name('admin.financial-reports');
     Route::get('/transactions', TransactionManagement::class)->name('admin.transactions');
@@ -67,6 +89,10 @@ Route::get('/about', function () {
 Route::get('/team', function () {
     return view('frontend.team', ['title' => 'Our Team - Cybersecurity & Innovations Club']);
 })->name('team');
+
+Route::get('/projects', [ProjectsPageController::class, 'index'])->name('projects');
+Route::get('/club-members', [PublicMemberPageController::class, 'index'])->name('members.public');
+Route::get('/club-members/{user}', [PublicMemberPageController::class, 'show'])->name('members.public.show');
 
 Route::get('/contact', function () {
     return view('frontend.contact', ['title' => 'Contact Us - Cybersecurity & Innovations Club']);

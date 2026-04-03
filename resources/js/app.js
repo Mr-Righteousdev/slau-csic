@@ -12,6 +12,46 @@ window.flatpickr = flatpickr;
 
 // Initialize components on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
+    const root = document.documentElement;
+    const themeButtons = Array.from(document.querySelectorAll('[data-theme-toggle]'));
+    const themeIcons = Array.from(document.querySelectorAll('[data-theme-icon]'));
+    const themeLabels = Array.from(document.querySelectorAll('[data-theme-label]'));
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = (theme, persist = true) => {
+        root.dataset.theme = theme;
+
+        if (persist) {
+            localStorage.setItem('slau-theme', theme);
+        }
+
+        themeIcons.forEach((icon) => {
+            icon.textContent = theme === 'dark' ? '☾' : '☀';
+        });
+
+        themeLabels.forEach((label) => {
+            label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        });
+    };
+
+    if (themeButtons.length) {
+        const savedTheme = localStorage.getItem('slau-theme');
+        applyTheme(savedTheme || root.dataset.theme || (mediaQuery.matches ? 'dark' : 'light'), false);
+
+        themeButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+                applyTheme(nextTheme);
+            });
+        });
+
+        mediaQuery.addEventListener('change', (event) => {
+            if (!localStorage.getItem('slau-theme')) {
+                applyTheme(event.matches ? 'dark' : 'light', false);
+            }
+        });
+    }
+
     // Map imports
     if (document.querySelector('#mapOne')) {
         import('./components/map').then(module => module.initMap());
@@ -37,5 +77,91 @@ document.addEventListener('DOMContentLoaded', () => {
         import('./components/chart/chart-13').then(module => module.initChartThirteen());
     }
 
+    const revealItems = document.querySelectorAll('.reveal-fade');
+    if (revealItems.length && 'IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -40px 0px',
+        });
+
+        revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+        revealItems.forEach((item) => item.classList.add('is-visible'));
+    }
+
+    const carousel = document.querySelector('[data-home-carousel]');
+    if (carousel) {
+        const slides = Array.from(carousel.querySelectorAll('[data-home-slide]'));
+        const dots = Array.from(carousel.querySelectorAll('[data-home-dot]'));
+        const panels = Array.from(carousel.querySelectorAll('[data-home-panel]'));
+        const prev = carousel.querySelector('[data-home-prev]');
+        const next = carousel.querySelector('[data-home-next]');
+        let activeIndex = slides.findIndex((slide) => slide.classList.contains('is-active'));
+        activeIndex = activeIndex >= 0 ? activeIndex : 0;
+        let intervalId = null;
+
+        const renderSlide = (index) => {
+            slides.forEach((slide, slideIndex) => {
+                slide.classList.toggle('is-active', slideIndex === index);
+            });
+
+            dots.forEach((dot, dotIndex) => {
+                dot.classList.toggle('is-active', dotIndex === index);
+                dot.setAttribute('aria-current', dotIndex === index ? 'true' : 'false');
+            });
+
+            panels.forEach((panel, panelIndex) => {
+                panel.classList.toggle('is-active', panelIndex === index);
+            });
+
+            activeIndex = index;
+        };
+
+        const nextSlide = () => renderSlide((activeIndex + 1) % slides.length);
+        const prevSlide = () => renderSlide((activeIndex - 1 + slides.length) % slides.length);
+
+        const startAutoPlay = () => {
+            if (slides.length < 2) return;
+            clearInterval(intervalId);
+            intervalId = window.setInterval(nextSlide, 5200);
+        };
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                renderSlide(index);
+                startAutoPlay();
+            });
+        });
+
+        panels.forEach((panel, index) => {
+            panel.addEventListener('click', () => {
+                renderSlide(index);
+                startAutoPlay();
+            });
+        });
+
+        prev?.addEventListener('click', () => {
+            prevSlide();
+            startAutoPlay();
+        });
+
+        next?.addEventListener('click', () => {
+            nextSlide();
+            startAutoPlay();
+        });
+
+        carousel.addEventListener('mouseenter', () => clearInterval(intervalId));
+        carousel.addEventListener('mouseleave', startAutoPlay);
+
+        renderSlide(activeIndex);
+        startAutoPlay();
+    }
 
 });

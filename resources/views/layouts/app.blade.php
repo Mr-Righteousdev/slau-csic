@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     @livewireStyles
     @filamentStyles
-    <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>
+    <title>{{ $title ?? 'Dashboard' }} | SLAU Cybersecurity & Innovations Club</title>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -167,7 +167,7 @@
             <!-- app header end -->
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                 @yield('content')
-                {{ $slot }}
+                {{ $slot ?? '' }}
             </div>
         </div>
 

@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMemberRegistrationRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class RegistrationController extends Controller
@@ -19,15 +17,28 @@ class RegistrationController extends Controller
         return view('pages.auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreMemberRegistrationRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $validated = $request->validated();
+        $validated['joined_at'] = now()->toDateString();
+        $validated['membership_type'] = 'active';
+        $validated['membership_status'] = 'pending';
+        $validated['privacy_settings'] = [
+            'show_email' => false,
+            'show_phone' => false,
+            'show_discord' => true,
+            'show_attendance' => false,
+            'show_program' => true,
+            'show_year' => true,
+            'allow_contact' => true,
+            'show_profile' => true,
+        ];
 
-        $validated['password'] = Hash::make($validated['password']);
+        if ($request->hasFile('profile_photo')) {
+            $validated['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
+        unset($validated['terms']);
 
         event(new Registered(($user = User::create($validated))));
 
@@ -36,4 +47,3 @@ class RegistrationController extends Controller
         return redirect(route('dashboard', absolute: false));
     }
 }
-
