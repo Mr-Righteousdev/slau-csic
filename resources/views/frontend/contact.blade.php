@@ -1,70 +1,91 @@
 @extends('layouts.frontend')
 
 @section('content')
-    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-        <header class="mb-8">
-            <p class="text-xs font-semibold tracking-wide text-emerald-300 uppercase mb-2">Contact</p>
-            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-3">Get in touch with the organizers</h1>
-            <p class="text-sm text-gray-300 max-w-2xl">
-                Questions about membership, events, collaborations, or speaking opportunities? Use the form
-                below or reach out via email/socials. You can wire this form up to a real backend later.
-            </p>
-        </header>
+    @php
+        $contactNotes = [
+            'This page is for students who want to join, visitors who need clarification, and collaborators who want to connect with the club.',
+            'Contact information should reduce hesitation by making the route to the club feel legitimate and simple.',
+            'A strong contact page is part of institutional trust because it proves the club can be reached by real people.',
+        ];
+    @endphp
 
-        <div class="grid gap-8 md:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)] items-start">
-            <form class="cyber-card rounded-2xl p-5 space-y-4">
-                <div class="grid sm:grid-cols-2 gap-4">
+    <section class="hero-backdrop border-b bg-cover bg-center" style="border-color: var(--page-border); background-image: url('{{ asset('images/club/certificate-team.jpg') }}');">
+        <div class="mx-auto max-w-6xl px-4 pb-14 pt-12 sm:px-6 lg:px-8">
+            <div class="grid items-center gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+                <div class="space-y-5">
+                    <p class="eyebrow">Contact the Club</p>
+                    <h1 class="page-hero-title">A serious club should be easy to reach for the right reasons.</h1>
+                    <p class="page-hero-copy">
+                        The contact page is part of the site’s credibility. It helps students, speakers, collaborators, and campus visitors understand how to start a real conversation with the club.
+                    </p>
+                </div>
+
+                <article class="spotlight-panel overflow-hidden rounded-md" style="background: color-mix(in srgb, var(--page-surface) 92%, transparent);">
+                    <img src="{{ asset('images/club/kevin-sharon.jpg') }}" alt="SLAU club members" class="h-[420px] w-full object-contain object-center">
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="reveal-fade py-18">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-8 md:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)] items-start">
+                <form class="dossier-card rounded-md p-6 sm:p-8 space-y-5">
                     <div>
-                        <label for="name" class="block text-xs font-medium text-gray-300 mb-1">Full name</label>
-                        <input id="name" type="text" class="w-full rounded-lg border border-gray-800 bg-black/40 px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400" placeholder="Your name" />
+                        <p class="eyebrow">Message Route</p>
+                        <h2 class="dossier-title">Questions, collaboration, or membership interest</h2>
                     </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="name" class="mb-2 block text-sm font-medium" style="color: var(--page-text-soft);">Full name</label>
+                            <input id="name" type="text" class="w-full rounded-sm border px-4 py-3 text-sm" style="border-color: var(--page-border); background: var(--page-surface-strong); color: var(--page-text);" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label for="email" class="mb-2 block text-sm font-medium" style="color: var(--page-text-soft);">Email</label>
+                            <input id="email" type="email" class="w-full rounded-sm border px-4 py-3 text-sm" style="border-color: var(--page-border); background: var(--page-surface-strong); color: var(--page-text);" placeholder="you@example.com">
+                        </div>
+                    </div>
+
                     <div>
-                        <label for="email" class="block text-xs font-medium text-gray-300 mb-1">Email</label>
-                        <input id="email" type="email" class="w-full rounded-lg border border-gray-800 bg-black/40 px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400" placeholder="you@example.com" />
+                        <label for="topic" class="mb-2 block text-sm font-medium" style="color: var(--page-text-soft);">Topic</label>
+                        <select id="topic" class="w-full rounded-sm border px-4 py-3 text-sm" style="border-color: var(--page-border); background: var(--page-surface-strong); color: var(--page-text);">
+                            <option>Membership and joining</option>
+                            <option>Event attendance or inquiry</option>
+                            <option>Collaboration or partnership</option>
+                            <option>Speaker invitation</option>
+                        </select>
                     </div>
-                </div>
 
-                <div>
-                    <label for="topic" class="block text-xs font-medium text-gray-300 mb-1">Topic</label>
-                    <select id="topic" class="w-full rounded-lg border border-gray-800 bg-black/40 px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400">
-                        <option>Membership / joining</option>
-                        <option>Event or workshop idea</option>
-                        <option>Collaboration or sponsorship</option>
-                        <option>Other</option>
-                    </select>
-                </div>
+                    <div>
+                        <label for="message" class="mb-2 block text-sm font-medium" style="color: var(--page-text-soft);">Message</label>
+                        <textarea id="message" rows="5" class="w-full rounded-sm border px-4 py-3 text-sm" style="border-color: var(--page-border); background: var(--page-surface-strong); color: var(--page-text);" placeholder="Tell the club how it can help"></textarea>
+                    </div>
 
-                <div>
-                    <label for="message" class="block text-xs font-medium text-gray-300 mb-1">Message</label>
-                    <textarea id="message" rows="4" class="w-full rounded-lg border border-gray-800 bg-black/40 px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400" placeholder="Tell us how we can help"></textarea>
-                </div>
+                    <p class="body-copy">
+                        This form structure supports membership questions, event inquiries, collaboration requests, partnership ideas, and general communication.
+                    </p>
 
-                <p class="text-[11px] text-gray-400">By submitting, you agree to be contacted by the club organizers via email.</p>
+                    <button type="button" class="cyber-button">Send Message</button>
+                </form>
 
-                <button type="button" class="cyber-button text-sm w-full sm:w-auto">Send message (static)</button>
-            </form>
+                <aside class="space-y-5">
+                    <article class="proof-card rounded-md p-6">
+                        <p class="eyebrow">Contact Notes</p>
+                        <ul class="mt-4 space-y-3 text-sm" style="color: var(--page-text-soft);">
+                            <li><span style="color: var(--page-text-muted);">Email:</span> cyberclub@slau.ac.ug</li>
+                            <li><span style="color: var(--page-text-muted);">Location:</span> St. Lawrence University, Kampala</li>
+                            <li><span style="color: var(--page-text-muted);">Audience:</span> students, collaborators, and campus visitors</li>
+                        </ul>
+                    </article>
 
-            <aside class="space-y-5 text-sm text-gray-300">
-                <div>
-                    <h2 class="text-sm font-semibold text-white mb-1">Club contact</h2>
-                    <p class="text-xs text-gray-300">Update these details with your actual contact info.</p>
-                    <ul class="mt-2 space-y-1 text-xs">
-                        <li><span class="text-gray-400">Email:</span> <span class="text-emerald-300">cyberclub@slau.ac.ug</span></li>
-                        <li><span class="text-gray-400">Location:</span> SLAU Campus, Kampala, Uganda</li>
-                        <li><span class="text-gray-400">Discord / WhatsApp:</span> To be announced</li>
-                    </ul>
-                </div>
-
-                <div class="border border-gray-800/80 rounded-xl bg-black/40 px-4 py-3 text-xs text-gray-300">
-                    <h3 class="text-xs font-semibold text-white mb-1">Office hours</h3>
-                    <p>We usually respond within a few days, especially around the start of the semester when onboarding is active.</p>
-                </div>
-
-                <div class="border border-amber-400/20 bg-amber-500/5 rounded-xl px-4 py-3 text-xs text-amber-100">
-                    <h3 class="font-semibold mb-1">Responsible security use only</h3>
-                    <p>All activities under this club emphasize ethical behavior, respect for privacy, and adherence to university and legal policies.</p>
-                </div>
-            </aside>
+                    @foreach ($contactNotes as $note)
+                        <article class="dossier-card rounded-md p-5">
+                            <p class="body-copy">{{ $note }}</p>
+                        </article>
+                    @endforeach
+                </aside>
+            </div>
         </div>
     </section>
 @endsection

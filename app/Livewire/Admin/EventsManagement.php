@@ -9,6 +9,7 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -59,10 +60,13 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                     ->color(fn (string $state): string => match ($state) {
                         'workshop' => 'primary',
                         'competition' => 'danger',
+                        'ctf' => 'danger',
+                        'bootcamp' => 'purple',
+                        'awareness_campaign' => 'warning',
+                        'talk' => 'info',
                         'social' => 'success',
-                        'meeting' => 'warning',
-                        'guest_speaker' => 'info',
                         'hackathon' => 'purple',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('start_date')
@@ -102,16 +106,18 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                     ->options([
                         'workshop' => 'Workshop',
                         'competition' => 'Competition',
+                        'ctf' => 'CTF',
+                        'bootcamp' => 'Bootcamp',
+                        'awareness_campaign' => 'Awareness Campaign',
+                        'talk' => 'Talk',
                         'social' => 'Social',
-                        'meeting' => 'Meeting',
-                        'guest_speaker' => 'Guest Speaker',
                         'hackathon' => 'Hackathon',
                     ]),
 
                 SelectFilter::make('status')
                     ->options([
                         'draft' => 'Draft',
-                        'scheduled' => 'Scheduled',
+                        'published' => 'Published',
                         'ongoing' => 'Ongoing',
                         'completed' => 'Completed',
                         'cancelled' => 'Cancelled',
@@ -135,6 +141,7 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                     }),
             ])
             ->actions([
+                ActionGroup::make([
                 ViewAction::make()
                     ->form($this->getEventFormSchema())
                     ->modalHeading('Event Details')
@@ -173,7 +180,13 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                             ->send();
                     }),
 
+                Action::make('attendance')
+                    ->icon('heroicon-o-user-group')
+                    ->label('Attendance')
+                    ->url(fn (Event $record): string => route('admin.events.attendance', $record)),
+
                 DeleteAction::make(),
+                ]),
             ])
 
             ->emptyStateActions([
@@ -193,9 +206,11 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                 ->options([
                     'workshop' => 'Workshop',
                     'competition' => 'Competition',
+                    'ctf' => 'CTF',
+                    'bootcamp' => 'Bootcamp',
+                    'awareness_campaign' => 'Awareness Campaign',
+                    'talk' => 'Talk',
                     'social' => 'Social',
-                    'meeting' => 'Meeting',
-                    'guest_speaker' => 'Guest Speaker',
                     'hackathon' => 'Hackathon',
                 ])
                 ->required(),
@@ -219,6 +234,14 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
                 ->required()
                 ->maxLength(255),
 
+            TextInput::make('external_link')
+                ->label('Meeting / registration link')
+                ->url()
+                ->maxLength(255),
+
+            RichEditor::make('requirements')
+                ->label('Requirements / joining notes'),
+
             TextInput::make('max_participants')
                 ->numeric()
                 ->minValue(1)
@@ -238,12 +261,12 @@ class EventsManagement extends Component implements HasActions, HasForms, HasTab
             Select::make('status')
                 ->options([
                     'draft' => 'Draft',
-                    'scheduled' => 'Scheduled',
+                    'published' => 'Published',
                     'ongoing' => 'Ongoing',
                     'completed' => 'Completed',
                     'cancelled' => 'Cancelled',
                 ])
-                ->default('scheduled')
+                ->default('published')
                 ->required(),
 
             Select::make('organizer_id')

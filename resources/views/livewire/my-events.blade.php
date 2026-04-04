@@ -84,7 +84,7 @@
                 <div class="bg-white rounded-lg shadow-md p-6 text-center">
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No Events Yet</h3>
                     <p class="text-gray-600">You haven't registered for or instructed any events yet.</p>
-                    <a href="{{ route('events') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                    <a href="{{ route('events-out') }}" class="text-blue-600 hover:text-blue-800 font-medium">
                         Browse Events →
                     </a>
                 </div>

@@ -1,100 +1,105 @@
 @extends('layouts.frontend')
 
 @section('content')
-    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-        <header class="mb-8 text-center">
-            <p class="text-xs font-semibold tracking-wide text-emerald-300 uppercase mb-2">Leadership</p>
-            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-3">Meet the organizing team</h1>
-            <p class="text-sm text-gray-300 max-w-2xl mx-auto">
-                The Cybersecurity & Innovations Club is led by dedicated students who coordinate learning
-                tracks, events, and partnerships. Update these profiles with your actual leaders.
-            </p>
-        </header>
+    @php
+        $team = [
+            [
+                'name' => 'Kevin',
+                'role' => 'Visible club representative',
+                'image' => 'images/club/kevin-samuel.jpg',
+                'summary' => 'Contributes to the public face of the club and helps make the community feel active, approachable, and credible.',
+            ],
+            [
+                'name' => 'Sharon',
+                'role' => 'Community-facing contributor',
+                'image' => 'images/club/kevin-sharon.jpg',
+                'summary' => 'Represents the inclusive and student-centered side of the club by helping the community feel welcoming and real.',
+            ],
+            [
+                'name' => 'Samuel',
+                'role' => 'Student contributor',
+                'image' => 'images/club/kevin-samuel-2.jpg',
+                'summary' => 'Supports the visible energy of the club and helps communicate that the community has active members behind it.',
+            ],
+        ];
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {{-- Example team cards – replace with real data --}}
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center text-lg font-semibold text-emerald-200">
-                    P
-                </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Club President</h2>
-                    <p class="text-xs text-gray-400">Overall coordination &amp; external relations.</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Leads strategy and semester planning.</li>
-                    <li>Represents the club to faculty and partners.</li>
-                </ul>
-            </article>
+        $leadershipNotes = [
+            'Visible leadership reduces uncertainty for prospective members.',
+            'Named people make the club feel accountable and organized.',
+            'A team page should show both personality and institutional seriousness.',
+        ];
+    @endphp
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-sky-400/20 border border-sky-400/40 flex items-center justify-center text-lg font-semibold text-sky-200">
-                    V
+    <section class="hero-backdrop border-b bg-cover bg-center" style="border-color: var(--page-border); background-image: url('{{ asset('images/club/with-gentlemen.jpg') }}');">
+        <div class="mx-auto max-w-6xl px-4 pb-14 pt-12 sm:px-6 lg:px-8">
+            <div class="grid items-center gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+                <div class="space-y-5">
+                    <p class="eyebrow">Leadership and Contributors</p>
+                    <h1 class="page-hero-title">A credible club should show the people who carry its identity.</h1>
+                    <p class="page-hero-copy">
+                        This page gives the club a visible human structure. Instead of hiding behind abstract branding, it introduces the students whose faces and participation help the community feel real.
+                    </p>
                 </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Vice President</h2>
-                    <p class="text-xs text-gray-400">Program design &amp; club operations.</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Helps run weekly sessions.</li>
-                    <li>Coordinates with working group leads.</li>
-                </ul>
-            </article>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-violet-400/20 border border-violet-400/40 flex items-center justify-center text-lg font-semibold text-violet-200">
-                    T
-                </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Technical Lead</h2>
-                    <p class="text-xs text-gray-400">Labs, tools, and learning tracks.</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Prepares labs &amp; CTF challenges.</li>
-                    <li>Mentors new members on fundamentals.</li>
-                </ul>
-            </article>
+                <article class="spotlight-panel overflow-hidden rounded-md">
+                    <img src="{{ asset('images/club/cyber-team.jpg') }}" alt="SLAU club members together" class="h-[420px] w-full object-cover">
+                </article>
+            </div>
+        </div>
+    </section>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-lg font-semibold text-amber-200">
-                    C
+    <section class="reveal-fade py-18">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
+                <div class="space-y-5">
+                    <p class="eyebrow">Why This Page Matters</p>
+                    <h2 class="section-title">Leadership visibility is part of institutional trust.</h2>
                 </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Community &amp; Comms Lead</h2>
-                    <p class="text-xs text-gray-400">Onboarding &amp; communication.</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Manages announcements and social media.</li>
-                    <li>Ensures an inclusive, welcoming environment.</li>
-                </ul>
-            </article>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-rose-400/20 border border-rose-400/40 flex items-center justify-center text-lg font-semibold text-rose-200">
-                    S
+                <div class="grid gap-4">
+                    @foreach ($leadershipNotes as $note)
+                        <article class="proof-card rounded-md px-5 py-5">
+                            <p class="body-copy">{{ $note }}</p>
+                        </article>
+                    @endforeach
                 </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Secretariat</h2>
-                    <p class="text-xs text-gray-400">Membership &amp; records.</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Keeps attendance and membership lists.</li>
-                    <li>Tracks feedback from members.</li>
-                </ul>
-            </article>
+            </div>
+        </div>
+    </section>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col items-center text-center gap-3">
-                <div class="h-16 w-16 rounded-full bg-teal-400/20 border border-teal-400/40 flex items-center justify-center text-lg font-semibold text-teal-200">
-                    F
+    <section class="cyber-section reveal-fade">
+        <div class="mx-auto max-w-6xl px-4 py-18 sm:px-6 lg:px-8">
+            <div class="grid gap-6 md:grid-cols-3">
+                @foreach ($team as $member)
+                    <article class="cyber-card overflow-hidden rounded-md">
+                        <img src="{{ asset($member['image']) }}" alt="{{ $member['name'] }} from the SLAU club" class="h-80 w-full object-cover object-top">
+                        <div class="p-6">
+                            <p class="dossier-label">{{ $member['role'] }}</p>
+                            <h2 class="dossier-title">{{ $member['name'] }}</h2>
+                            <p class="dossier-copy">{{ $member['summary'] }}</p>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="reveal-fade py-18">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <article class="identity-block">
+                <div class="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+                    <article class="quote-panel rounded-md p-6">
+                        <p class="eyebrow">Team Position</p>
+                        <p class="mt-5 text-xl font-semibold leading-9" style="color: var(--page-text);">
+                            The team page is not only about profile cards. It is about proving that the club has real people responsible for its culture, visibility, and continuity.
+                        </p>
+                    </article>
+
+                    <div class="flex flex-wrap gap-3 lg:justify-end">
+                        <a href="{{ route('members.public') }}" class="cyber-button">View Member Directory</a>
+                        <a href="{{ route('about') }}" class="cyber-outline-button">Read Club Identity</a>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-white">Faculty Patron / Advisor</h2>
-                    <p class="text-xs text-gray-400">Staff mentor (optional placeholder).</p>
-                </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li>Supports alignment with university policies.</li>
-                    <li>Helps connect with external speakers.</li>
-                </ul>
             </article>
         </div>
     </section>

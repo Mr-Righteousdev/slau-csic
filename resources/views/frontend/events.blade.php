@@ -1,73 +1,117 @@
 @extends('layouts.frontend')
 
 @section('content')
-    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-        <header class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-                <p class="text-xs font-semibold tracking-wide text-emerald-300 uppercase mb-2">Events</p>
-                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Upcoming sessions & activities</h1>
-                <p class="text-sm text-gray-300 max-w-2xl">
-                    Workshops, CTFs, info sessions, and meetups organized by the Cybersecurity & Innovations Club.
-                    This is a static preview—later you can connect this page to a database or admin panel.
-                </p>
+    @php
+        $eventTypes = [
+            [
+                'label' => 'Weekly Session',
+                'title' => 'Structured practical learning',
+                'text' => 'The club runs repeated learning moments so students can build continuity, not just attend a one-time activity and disappear.',
+            ],
+            [
+                'label' => 'Challenge Activity',
+                'title' => 'Team-based problem solving',
+                'text' => 'Challenge sessions give members space to practice under pressure, collaborate with peers, and experience the energy of applied cybersecurity work.',
+            ],
+            [
+                'label' => 'Public Representation',
+                'title' => 'Activity that can be seen and remembered',
+                'text' => 'Events also matter because they give the club a visible footprint. A community becomes more credible when its activity can be observed.',
+            ],
+        ];
+
+        $operatingModel = [
+            'Visitors should be able to attend before they decide to join.',
+            'Event language should explain what the session is for and who it helps.',
+            'Activities should make the club feel active, not speculative.',
+            'Every event page should guide the visitor toward the right next action.',
+        ];
+    @endphp
+
+    <section class="hero-backdrop border-b bg-cover bg-center" style="border-color: var(--page-border); background-image: url('{{ asset('images/club/cyber-team.jpg') }}');">
+        <div class="mx-auto max-w-6xl px-4 pb-14 pt-12 sm:px-6 lg:px-8">
+            <div class="grid items-center gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+                <div class="space-y-5">
+                    <p class="eyebrow">Events and Activities</p>
+                    <h1 class="page-hero-title">The events page should explain how the club actually moves.</h1>
+                    <p class="page-hero-copy">
+                        This page is no longer only a list of possible sessions. It now positions events as the club’s operating model: the place where new visitors observe the culture and members develop through repeated participation.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('register') }}" class="cyber-button">Create Member Access</a>
+                        <a href="{{ route('contact') }}" class="cyber-outline-button">Ask About Participation</a>
+                    </div>
+                </div>
+
+                <article class="spotlight-panel overflow-hidden rounded-md">
+                    <img src="{{ asset('images/club/certificate-team.jpg') }}" alt="SLAU club event moment" class="h-[420px] w-full object-cover">
+                </article>
             </div>
-            <a href="{{ route('contact') }}" class="cyber-button text-xs sm:text-sm">Propose an event</a>
-        </header>
+        </div>
+    </section>
 
-        <div class="space-y-4">
-            {{-- Example event cards – replace with dynamic data later --}}
-            <article class="cyber-card rounded-xl p-5 flex flex-col sm:flex-row gap-4">
-                <div class="sm:w-1/4 flex flex-col justify-between gap-2">
-                    <div>
-                        <p class="text-xs font-semibold text-emerald-300">Workshop</p>
-                        <p class="text-sm font-semibold text-white">Intro to Ethical Hacking</p>
-                    </div>
-                    <div class="text-[11px] text-gray-400">
-                        <p>Every Saturday • 2:00 PM - 4:00 PM</p>
-                        <p>SLAU Computer Lab / Online</p>
-                    </div>
-                </div>
-                <div class="sm:flex-1 text-xs text-gray-300 space-y-2">
-                    <p>Get comfortable with the hacker mindset, common attack surfaces, and core tools. Perfect for beginners who want a safe introduction to security.</p>
-                    <ul class="list-disc list-inside space-y-1">
-                        <li>Setting up your lab safely</li>
-                        <li>Reconnaissance basics</li>
-                        <li>Legal & ethical considerations</li>
-                    </ul>
-                </div>
-            </article>
+    <section class="reveal-fade py-18">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 max-w-3xl">
+                <p class="eyebrow">Operating Model</p>
+                <h2 class="section-title">A cybersecurity club becomes credible when its rhythm is visible.</h2>
+            </div>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col sm:flex-row gap-4">
-                <div class="sm:w-1/4 flex flex-col justify-between gap-2">
-                    <div>
-                        <p class="text-xs font-semibold text-sky-300">Capture the Flag</p>
-                        <p class="text-sm font-semibold text-white">SLAU Internal CTF</p>
-                    </div>
-                    <div class="text-[11px] text-gray-400">
-                        <p>Monthly • Friday evening</p>
-                        <p>On-campus & Discord</p>
-                    </div>
-                </div>
-                <div class="sm:flex-1 text-xs text-gray-300 space-y-2">
-                    <p>Form a team or play solo to tackle challenges in web exploitation, OSINT, cryptography, and forensics. Great preparation for external CTFs.</p>
-                    <p class="text-emerald-300">Prizes for top performers and most improved participants.</p>
-                </div>
-            </article>
+            <div class="grid gap-5 md:grid-cols-3">
+                @foreach ($eventTypes as $type)
+                    <article class="route-card rounded-md p-6">
+                        <p class="dossier-label">{{ $type['label'] }}</p>
+                        <h3 class="dossier-title">{{ $type['title'] }}</h3>
+                        <p class="dossier-copy">{{ $type['text'] }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
 
-            <article class="cyber-card rounded-xl p-5 flex flex-col sm:flex-row gap-4">
-                <div class="sm:w-1/4 flex flex-col justify-between gap-2">
-                    <div>
-                        <p class="text-xs font-semibold text-violet-300">Guest Talk</p>
-                        <p class="text-sm font-semibold text-white">Careers in Cybersecurity</p>
-                    </div>
-                    <div class="text-[11px] text-gray-400">
-                        <p>Once per semester</p>
-                        <p>Auditorium / Online</p>
-                    </div>
+    <section class="cyber-section reveal-fade">
+        <div class="mx-auto max-w-6xl px-4 py-18 sm:px-6 lg:px-8">
+            <div class="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
+                <div class="space-y-5">
+                    <p class="eyebrow">Clarity Rules</p>
+                    <h2 class="section-title">Visitors should understand what to expect before they register for anything.</h2>
+                    <p class="lead-copy">
+                        That is why this page now treats event communication as part of trust-building. The goal is not to sound exciting first. The goal is to make participation easy to understand.
+                    </p>
                 </div>
-                <div class="sm:flex-1 text-xs text-gray-300 space-y-2">
-                    <p>Industry professionals share their journeys, what they look for in junior roles, and how to build a strong security portfolio while still in school.</p>
-                    <p>Follow our social media for exact dates and speaker announcements.</p>
+
+                <div class="grid gap-4">
+                    @foreach ($operatingModel as $item)
+                        <article class="dossier-card rounded-md px-5 py-5">
+                            <p class="body-copy">{{ $item }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="reveal-fade py-18">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <article class="identity-block">
+                <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                    <div class="space-y-5">
+                        <p class="eyebrow">Event Proof</p>
+                        <h2 class="dossier-title">Visible event culture helps the club feel active before a visitor ever attends.</h2>
+                        <p class="dossier-copy">
+                            The use of real club imagery and public participation moments makes the events page feel more grounded. Instead of promising activity abstractly, the site now shows that the club has a visible presence.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="{{ route('contact') }}" class="cyber-button">Contact Organizers</a>
+                            <a href="{{ route('members.public') }}" class="cyber-outline-button">View Member Profiles</a>
+                        </div>
+                    </div>
+
+                    <article class="story-panel overflow-hidden rounded-md">
+                        <div class="story-panel-image-wrap">
+                            <img src="{{ asset('images/club/with-gentlemen.jpg') }}" alt="SLAU club members at an event" class="story-panel-image">
+                        </div>
+                    </article>
                 </div>
             </article>
         </div>
