@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -29,15 +30,30 @@ class User extends Authenticatable
         'student_id',
         'phone',
         'program',
+        'faculty',
         'year_of_study',
+        'date_of_birth',
+        'gender',
+        'residence',
         'membership_type',
         'membership_status',
         'is_discord_member',
         'discord_username',
         'joined_at',
         'bio',
+        'headline',
+        'specialization_track',
+        'notable_problems_solved',
+        'achievements_summary',
+        'competition_rank',
+        'emergency_contact_name',
+        'emergency_contact_phone',
         'github_username',
         'linkedin_url',
+        'htb_profile_url',
+        'htb_username',
+        'htb_profile_data',
+        'htb_last_synced_at',
         'profile_photo',
         'privacy_settings',
         'approval_notes',
@@ -70,8 +86,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'joined_at' => 'date',
+            'date_of_birth' => 'date',
             'is_discord_member' => 'boolean',
             'privacy_settings' => 'array',
+            'htb_profile_data' => 'array',
+            'htb_last_synced_at' => 'datetime',
             'approved_at' => 'datetime',
             'suspended_until' => 'datetime',
         ];
@@ -116,6 +135,35 @@ class User extends Authenticatable
     public function projectMemberships()
     {
         return $this->hasMany(ProjectMember::class);
+    }
+
+    public function memberProjects()
+    {
+        return $this->belongsToMany(Project::class, 'project_members')
+            ->withPivot(['role', 'joined_at', 'left_at', 'contribution'])
+            ->withTimestamps();
+    }
+
+    public function competitionParticipations()
+    {
+        return $this->hasMany(CompetitionParticipants::class);
+    }
+
+    public function competitions()
+    {
+        return $this->belongsToMany(Competition::class, 'competition_participants')
+            ->withPivot(['team_name', 'role'])
+            ->withTimestamps();
+    }
+
+    public function electionVotes(): HasMany
+    {
+        return $this->hasMany(ElectionVote::class);
+    }
+
+    public function clubResourceProgress(): HasMany
+    {
+        return $this->hasMany(ClubResourceProgress::class);
     }
 
     public function trainings()
@@ -350,7 +398,13 @@ class User extends Authenticatable
 
     public function canShowField(string $field): bool
     {
-        return ($this->privacy_settings[$field] ?? false) && $this->show_profile;
+        $showProfile = (bool) ($this->privacy_settings['show_profile'] ?? true);
+
+        if ($field === 'show_profile') {
+            return $showProfile;
+        }
+
+        return (bool) ($this->privacy_settings[$field] ?? false) && $showProfile;
     }
 
     public function canBeContacted(): bool
@@ -481,12 +535,20 @@ class User extends Authenticatable
     // Member Statistics Methods
     public function getMemberStats(): array
     {
+        $competitionParticipations = $this->competitionParticipations()->count();
+        $portalProgress = $this->clubResourceProgress()->get();
+
         return [
             'total_attendance' => $this->attendance()->count(),
             'attendance_rate' => $this->getAttendanceRate(),
             'events_attended' => $this->eventRegistrations()->where('attended', true)->count(),
             'projects_led' => $this->projects()->count(),
             'projects_participated' => $this->projectMemberships()->count(),
+            'competition_entries' => $competitionParticipations,
+            'latest_competition_rank' => $this->competition_rank,
+            'club_portal_active_tracks' => $portalProgress->where('status', 'in_progress')->count(),
+            'club_portal_completed_tracks' => $portalProgress->where('status', 'completed')->count(),
+            'club_portal_average_progress' => (int) round($portalProgress->avg('progress_percentage') ?? 0),
             'trainings_completed' => $this->trainingEnrollments()->where('completed', true)->count(),
             'meetings_this_semester' => $this->meetingsThisSemester(),
             'is_active_this_semester' => $this->isActiveThisSemester(),

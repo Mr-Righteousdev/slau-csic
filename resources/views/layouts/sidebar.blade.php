@@ -15,7 +15,7 @@
 
             // Add your route-specific active menu initialization here
             // Example:
-            if (currentPath.startsWith('admin/dashboard')) {
+            if (currentPath.startsWith('dashboard') || currentPath.startsWith('club/')) {
                 this.openSubmenus['dashboard'] = true;
             }
             if (currentPath.startsWith('admin/users')) {
@@ -99,18 +99,78 @@
                     <ul class="flex flex-col gap-1">
                         <!-- Dashboard - Available to all authenticated users -->
                         <li>
-                            <a href="{{ route('admin.dashboard') }}" wire:navigate class="menu-item group"
+                            <a href="{{ route('dashboard') }}" wire:navigate class="menu-item group"
                                 :class="[
-                                    isActive('/admin') ? 'menu-item-active' : 'menu-item-inactive',
+                                    isActive('/dashboard') ? 'menu-item-active' : 'menu-item-inactive',
                                     (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
                                     'xl:justify-center' : 'justify-start'
                                 ]">
-                                <span :class="isActive('/admin') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                <span :class="isActive('/dashboard') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z" fill="currentColor"></path></svg>
                                 </span>
                                 <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
                                     class="menu-item-text flex items-center gap-2">
-                                    Dashboard
+                                    Club Portal
+                                </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('portal.competitions') }}" wire:navigate class="menu-item group"
+                                :class="[
+                                    isActive('/club/competitions') ? 'menu-item-active' : 'menu-item-inactive',
+                                    (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'
+                                ]">
+                                <span :class="isActive('/club/competitions') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 4.75h10A2.25 2.25 0 0 1 19.25 7v10A2.25 2.25 0 0 1 17 19.25H7A2.25 2.25 0 0 1 4.75 17V7A2.25 2.25 0 0 1 7 4.75Zm1.5 3.5v7h7v-7h-7Z" fill="currentColor"/></svg>
+                                </span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text flex items-center gap-2">
+                                    Competitions
+                                </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('portal.voting') }}" wire:navigate class="menu-item group"
+                                :class="[
+                                    isActive('/club/voting') ? 'menu-item-active' : 'menu-item-inactive',
+                                    (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'
+                                ]">
+                                <span :class="isActive('/club/voting') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6.75 5.75h10.5v4.5H6.75v-4.5Zm-2 6h14.5v6.5a2 2 0 0 1-2 2H6.75a2 2 0 0 1-2-2v-6.5Z" fill="currentColor"/></svg>
+                                </span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text flex items-center gap-2">
+                                    Cabinet Voting
+                                </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('portal.ctf') }}" wire:navigate class="menu-item group"
+                                :class="[
+                                    isActive('/club/ctf-arena') ? 'menu-item-active' : 'menu-item-inactive',
+                                    (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'
+                                ]">
+                                <span :class="isActive('/club/ctf-arena') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4.75 7A2.25 2.25 0 0 1 7 4.75h4.75v14.5H7A2.25 2.25 0 0 1 4.75 17V7Zm8.5-2.25H17A2.25 2.25 0 0 1 19.25 7v10A2.25 2.25 0 0 1 17 19.25h-3.75V4.75Z" fill="currentColor"/></svg>
+                                </span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text flex items-center gap-2">
+                                    CTF Arena
+                                </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('portal.classes') }}" wire:navigate class="menu-item group"
+                                :class="[
+                                    isActive('/club/classes') ? 'menu-item-active' : 'menu-item-inactive',
+                                    (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'
+                                ]">
+                                <span :class="isActive('/club/classes') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.75 6A2.25 2.25 0 0 1 8 3.75h8A2.25 2.25 0 0 1 18.25 6v12A2.25 2.25 0 0 1 16 20.25H8A2.25 2.25 0 0 1 5.75 18V6Zm3 2.25v1.5h6.5v-1.5h-6.5Zm0 4h6.5v-1.5h-6.5v1.5Zm0 4h4v-1.5h-4v1.5Z" fill="currentColor"/></svg>
+                                </span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text flex items-center gap-2">
+                                    Online Classes
                                 </span>
                             </a>
                         </li>
@@ -153,13 +213,13 @@
 
                         <!-- Events - Available to all authenticated users -->
                         <li>
-                            <a href="{{ route('events') }}" wire:navigate class="menu-item group"
+                            <a href="{{ route('events-out') }}" wire:navigate class="menu-item group"
                                 :class="[
-                                    isActive('/events') ? 'menu-item-active' : 'menu-item-inactive',
+                                    isActive('/events-out') ? 'menu-item-active' : 'menu-item-inactive',
                                     (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
                                     'xl:justify-center' : 'justify-start'
                                 ]">
-                                <span :class="isActive('/events') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                <span :class="isActive('/events-out') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z" fill="currentColor"></path></svg>
                                 </span>
                                 <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
@@ -475,4 +535,3 @@
 <!-- Mobile Overlay -->
 <div x-show="$store.sidebar.isMobileOpen" @click="$store.sidebar.setMobileOpen(false)"
     class="fixed z-50 h-screen w-full bg-gray-900/50"></div>
-
