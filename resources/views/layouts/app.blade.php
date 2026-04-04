@@ -43,7 +43,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('theme', {
                 init() {
-                    const savedTheme = localStorage.getItem('theme');
+                    const savedTheme = localStorage.getItem('slau-theme');
                     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' :
                         'light';
                     this.theme = savedTheme || systemTheme;
@@ -52,7 +52,7 @@
                 theme: 'light',
                 toggle() {
                     this.theme = this.theme === 'light' ? 'dark' : 'light';
-                    localStorage.setItem('theme', this.theme);
+                    localStorage.setItem('slau-theme', this.theme);
                     this.updateTheme();
                 },
                 updateTheme() {
@@ -60,9 +60,11 @@
                     const body = document.body;
                     if (this.theme === 'dark') {
                         html.classList.add('dark');
+                        html.dataset.theme = 'dark';
                         body.classList.add('dark', 'bg-gray-900');
                     } else {
                         html.classList.remove('dark');
+                        html.dataset.theme = 'light';
                         body.classList.remove('dark', 'bg-gray-900');
                     }
                 }
@@ -102,15 +104,17 @@
     <!-- Apply dark mode immediately to prevent flash -->
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme');
+            const savedTheme = localStorage.getItem('slau-theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             const theme = savedTheme || systemTheme;
 
             // Apply to <html> immediately (always available)
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
+                document.documentElement.dataset.theme = 'dark';
             } else {
                 document.documentElement.classList.remove('dark');
+                document.documentElement.dataset.theme = 'light';
             }
 
             // Apply body classes once <body> exists
@@ -130,6 +134,40 @@
                 applyBodyTheme();
             }
         })();
+
+        // Re-apply theme during Livewire navigation (before content swaps to prevent flash)
+        document.addEventListener('livewire:navigating', () => {
+            const savedTheme = localStorage.getItem('slau-theme');
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = savedTheme || systemTheme;
+
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.dataset.theme = 'dark';
+                document.body.classList.add('dark', 'bg-gray-900');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.dataset.theme = 'light';
+                document.body.classList.remove('dark', 'bg-gray-900');
+            }
+        });
+
+        // Also handle navigating for extra safety
+        document.addEventListener('livewire:navigated', () => {
+            const savedTheme = localStorage.getItem('slau-theme');
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = savedTheme || systemTheme;
+
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.dataset.theme = 'dark';
+                document.body.classList.add('dark', 'bg-gray-900');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.dataset.theme = 'light';
+                document.body.classList.remove('dark', 'bg-gray-900');
+            }
+        });
     </script>
 
 </head>
@@ -156,7 +194,7 @@
         @include('layouts.backdrop')
         @include('layouts.sidebar')
 
-        <div class="flex-1 transition-all duration-300 ease-in-out"
+        <div class="flex-1"
             :class="{
                 'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
                 'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,

@@ -33,7 +33,7 @@ class ManagePortfolios extends Component
     protected $rules = [
         'title' => 'required|string|max:255',
         'description' => 'nullable|string',
-        'category' => 'required|in:'.implode(',', array_keys(StudentPortfolio::categories())),
+        'category' => 'required',
         'external_link' => 'nullable|url',
         'student_id' => 'required|exists:users,id',
         'is_published' => 'boolean',

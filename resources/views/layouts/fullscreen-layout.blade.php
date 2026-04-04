@@ -16,7 +16,13 @@
         (function () {
             const savedTheme = localStorage.getItem('slau-theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            document.documentElement.dataset.theme = savedTheme || systemTheme;
+            const theme = savedTheme || systemTheme;
+            document.documentElement.dataset.theme = theme;
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
         })();
     </script>
 
