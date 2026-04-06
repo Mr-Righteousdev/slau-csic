@@ -32,7 +32,7 @@ class StoreMemberRegistrationRequest extends FormRequest
             'gender' => ['required', 'string', 'max:30'],
             'residence' => ['required', 'string', 'max:120'],
             'headline' => ['required', 'string', 'max:120'],
-            'bio' => ['required', 'string', 'min:80', 'max:1200'],
+            'bio' => ['required', 'string', 'min:10', 'max:1200'],
             'specialization_track' => ['nullable', 'string', 'max:120'],
             'notable_problems_solved' => ['nullable', 'string', 'max:1200'],
             'achievements_summary' => ['nullable', 'string', 'max:1200'],
