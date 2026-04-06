@@ -66,7 +66,6 @@ class Meetings extends Component implements HasActions, HasSchemas, HasTable
         'duration_minutes.max' => 'Meeting duration cannot exceed 8 hours',
     ];
 
-
     public function table(Table $table): Table
     {
         return $table
@@ -152,8 +151,7 @@ class Meetings extends Component implements HasActions, HasSchemas, HasTable
             'attendance_open' => false,
         ]);
 
-        // Log activity
-        Auth::user()->logActivity('created', 'Meeting', $meeting->id, null, $meeting->toArray());
+        // Auth::user()->logActivity('created', 'Meeting', $meeting->id, null, $meeting->toArray());
 
         // Show success message
         $this->showSuccessMessage = true;

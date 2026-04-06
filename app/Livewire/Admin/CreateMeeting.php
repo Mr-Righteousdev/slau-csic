@@ -80,8 +80,7 @@ class CreateMeeting extends Component
             'attendance_open' => false,
         ]);
 
-        // Log activity
-        Auth::user()->logActivity('created', 'Meeting', $meeting->id, null, $meeting->toArray());
+        // Auth::user()->logActivity('created', 'Meeting', $meeting->id, null, $meeting->toArray());
 
         // Show success message
         $this->showSuccessMessage = true;

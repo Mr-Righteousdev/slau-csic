@@ -19,6 +19,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Impersonate, Notifiable;
+
     use LogsActivity;
 
     /**
@@ -107,11 +108,10 @@ class User extends Authenticatable
 
     protected static $logAttributes = ['name', 'email'];
 
-
-     public function getActivitylogOptions(): LogOptions
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-        ->logOnly(['name', 'email']);
+            ->logOnly(['name', 'email']);
     }
 
     public function canImpersonate()
@@ -456,11 +456,11 @@ class User extends Authenticatable
                 'approval_notes' => $notes,
             ]);
 
-            $this->logActivity('member_approved', 'User', $this->id, null, [
-                'approved_by' => $approver?->name,
-                'approved_at' => now()->toDateTimeString(),
-                'notes' => $notes,
-            ]);
+            // $this->logActivity('member_approved', 'User', $this->id, null, [
+            //     'approved_by' => $approver?->name,
+            //     'approved_at' => now()->toDateTimeString(),
+            //     'notes' => $notes,
+            // ]);
 
             // Send approval notification
             $this->notify(new \App\Notifications\MemberApprovalNotification($approver, $notes));
@@ -480,11 +480,11 @@ class User extends Authenticatable
                 'approval_notes' => $notes,
             ]);
 
-            $this->logActivity('member_rejected', 'User', $this->id, null, [
-                'rejected_by' => $rejecter?->name,
-                'rejected_at' => now()->toDateTimeString(),
-                'notes' => $notes,
-            ]);
+            // $this->logActivity('member_rejected', 'User', $this->id, null, [
+            //     'rejected_by' => $rejecter?->name,
+            //     'rejected_at' => now()->toDateTimeString(),
+            //     'notes' => $notes,
+            // ]);
 
             // Send rejection notification
             $this->notify(new \App\Notifications\MemberRejectionNotification($rejecter, $notes));
@@ -505,11 +505,11 @@ class User extends Authenticatable
                 'suspended_by' => $suspender?->id,
             ]);
 
-            $this->logActivity('member_suspended', 'User', $this->id, null, [
-                'suspended_by' => $suspender?->name,
-                'reason' => $reason,
-                'suspended_until' => $until ? $until->format('Y-m-d H:i:s') : null,
-            ]);
+            // $this->logActivity('member_suspended', 'User', $this->id, null, [
+            //     'suspended_by' => $suspender?->name,
+            //     'reason' => $reason,
+            //     'suspended_until' => $until ? $until->format('Y-m-d H:i:s') : null,
+            // ]);
 
             return true;
         } catch (\Exception $e) {
@@ -540,9 +540,9 @@ class User extends Authenticatable
                 'membership_status' => 'active',
             ]);
 
-            $this->logActivity('member_converted_to_alumni', 'User', $this->id, null, [
-                'converted_at' => now()->toDateTimeString(),
-            ]);
+            // $this->logActivity('member_converted_to_alumni', 'User', $this->id, null, [
+            //     'converted_at' => now()->toDateTimeString(),
+            // ]);
 
             return true;
         } catch (\Exception $e) {

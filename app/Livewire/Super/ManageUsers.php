@@ -447,8 +447,7 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                                 $record->syncRoles($data['roles']);
                             }
 
-                            // Log activity
-                            $record->logActivity('updated', 'User', $record->id, $oldValues, $record->toArray());
+                            // $record->logActivity('updated', 'User', $record->id, $oldValues, $record->toArray());
 
                             Notification::make()
                                 ->title('Edited successfully')
@@ -482,7 +481,7 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                                 'password' => bcrypt($data['password']),
                             ]);
 
-                            $record->logActivity('password_reset', 'User', $record->id, null, ['password_changed' => true]);
+                            // $record->logActivity('password_reset', 'User', $record->id, null, ['password_changed' => true]);
 
                             // You might want to send email notification here
                         })->visible(fn (User $record) => $record->isSuperAdmin() === false),
@@ -499,7 +498,7 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                         ->visible(fn (User $record) => Auth::user()->canImpersonate() && Auth::user()->canBeImpersonated()),
 
                     Action::make('toggle_status')
-                        ->label(fn (User $record) => $record->membership_status === 'active' ? 'Suspend' : 'Activate')
+                        ->label(fn (User $record) => $record->membership_status === 'active' ? 'Suspend' : 'Activate / Approve')
                         ->icon(fn (User $record) => $record->membership_status === 'active' ? 'heroicon-o-no-symbol' : 'heroicon-o-check')
                         ->color(fn (User $record) => $record->membership_status === 'active' ? 'danger' : 'success')
                         ->action(function (User $record) {
@@ -507,14 +506,21 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                             $newStatus = $oldStatus === 'active' ? 'suspended' : 'active';
 
                             $record->update(['membership_status' => $newStatus]);
-
-                            $record->logActivity(
-                                'status_changed',
-                                'User',
-                                $record->id,
-                                ['membership_status' => $oldStatus],
-                                ['membership_status' => $newStatus]
-                            );
+                            if ($newStatus = 'active') {
+                                $record->update([
+                                    'membership_status' => 'active',
+                                    'approved_at' => now(),
+                                    'approved_by' => Auth::user()->id,
+                                    'approval_notes' => "Approved via users manager.",
+                            ]);
+                            }
+                            // $record->logActivity(
+                            //     'status_changed',
+                            //     'User',
+                            //     $record->id,
+                            //     ['membership_status' => $oldStatus],
+                            //     ['membership_status' => $newStatus]
+                            // );
                         })->visible(fn (User $record) => $record->isSuperAdmin() === false),
 
                     Action::make('view_attendance')
@@ -529,8 +535,7 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                             $oldValues = $record->toArray();
                             $record->delete();
 
-                            // Log activity
-                            $record->logActivity('deleted', 'User', $record->id, $oldValues, null);
+                            // $record->logActivity('deleted', 'User', $record->id, $oldValues, null);
 
                             Notification::make()
                                 ->title('User deleted successfully')
@@ -555,14 +560,14 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                             $records->each(function ($record) {
                                 $oldStatus = $record->membership_status;
                                 $record->update(['membership_status' => 'active']);
-
-                                $record->logActivity(
-                                    'bulk_status_changed',
-                                    'User',
-                                    $record->id,
-                                    ['membership_status' => $oldStatus],
-                                    ['membership_status' => 'active']
-                                );
+                                $record->approve(Auth::user(), $data['notes'] ?? null);
+                                // $record->logActivity(
+                                //     'bulk_status_changed',
+                                //     'User',
+                                //     $record->id,
+                                //     ['membership_status' => $oldStatus],
+                                //     ['membership_status' => 'active']
+                                // );
                             });
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -576,13 +581,13 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                                 $oldStatus = $record->membership_status;
                                 $record->update(['membership_status' => 'suspended']);
 
-                                $record->logActivity(
-                                    'bulk_status_changed',
-                                    'User',
-                                    $record->id,
-                                    ['membership_status' => $oldStatus],
-                                    ['membership_status' => 'suspended']
-                                );
+                                // $record->logActivity(
+                                //     'bulk_status_changed',
+                                //     'User',
+                                //     $record->id,
+                                //     ['membership_status' => $oldStatus],
+                                //     ['membership_status' => 'suspended']
+                                // );
                             });
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -603,13 +608,13 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                             $records->each(function ($record) use ($role) {
                                 $record->assignRole($role);
 
-                                $record->logActivity(
-                                    'role_assigned',
-                                    'User',
-                                    $record->id,
-                                    null,
-                                    ['role_assigned' => $role->name]
-                                );
+                                // $record->logActivity(
+                                //     'role_assigned',
+                                //     'User',
+                                //     $record->id,
+                                //     null,
+                                //     ['role_assigned' => $role->name]
+                                // );
                             });
                         }),
 

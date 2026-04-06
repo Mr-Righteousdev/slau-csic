@@ -43,7 +43,7 @@ class MeetingDetails extends Component
 
         $this->meeting->openAttendance();
 
-        Auth::user()->logActivity('opened_attendance', 'Meeting', $this->meeting->id);
+        // Auth::user()->logActivity('opened_attendance', 'Meeting', $this->meeting->id);
 
         session()->flash('success', 'Attendance is now open!');
 
@@ -61,7 +61,7 @@ class MeetingDetails extends Component
 
         $this->meeting->closeAttendance();
 
-        Auth::user()->logActivity('closed_attendance', 'Meeting', $this->meeting->id);
+        // Auth::user()->logActivity('closed_attendance', 'Meeting', $this->meeting->id);
 
         session()->flash('success', 'Attendance has been closed.');
 
