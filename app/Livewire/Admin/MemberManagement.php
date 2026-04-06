@@ -17,8 +17,8 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -199,33 +199,33 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                             ->circleCropper()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
-                        
+
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('name')
                                     ->required()
                                     ->maxLength(255),
-                                
+
                                 TextInput::make('email')
                                     ->email()
                                     ->required()
                                     ->unique(User::class, 'email')
                                     ->maxLength(255),
-                                
+
                                 TextInput::make('student_id')
                                     ->label('Student ID')
                                     ->required()
                                     ->unique(User::class, 'student_id')
                                     ->maxLength(50),
-                                
+
                                 TextInput::make('phone')
                                     ->tel()
                                     ->maxLength(20),
-                                
+
                                 TextInput::make('program')
                                     ->label('Program/Course')
                                     ->maxLength(100),
-                                
+
                                 Select::make('year_of_study')
                                     ->label('Year of Study')
                                     ->options([
@@ -236,7 +236,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         5 => 'Year 5',
                                     ]),
                             ]),
-                        
+
                         Grid::make(2)
                             ->schema([
                                 Select::make('membership_type')
@@ -247,7 +247,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         'alumni' => 'Alumni',
                                     ])
                                     ->required(),
-                                
+
                                 Select::make('membership_status')
                                     ->label('Membership Status')
                                     ->options([
@@ -257,11 +257,11 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         'inactive' => 'Inactive',
                                     ])
                                     ->required(),
-                                
+
                                 DatePicker::make('joined_at')
                                     ->label('Joined Date')
                                     ->default(now()),
-                                
+
                                 CheckboxList::make('privacy_settings')
                                     ->label('Privacy Settings')
                                     ->options([
@@ -283,7 +283,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         'show_profile' => true,
                                     ]),
                             ]),
-                        
+
                         Select::make('roles')
                             ->label('Assign Roles')
                             ->multiple()
@@ -296,12 +296,12 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                         if (isset($data['roles'])) {
                             $user->syncRoles($data['roles']);
                         }
-                        
+
                         Notification::make()
                             ->title('Member created successfully')
                             ->success()
                             ->send();
-                        
+
                         return $user;
                     }),
             ])
@@ -316,7 +316,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         ->label('Profile Photo')
                                         ->image()
                                         ->disabled(),
-                                    
+
                                     Grid::make(2)
                                         ->schema([
                                             TextInput::make('name')->disabled(),
@@ -326,7 +326,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                             TextInput::make('program')->disabled(),
                                             TextInput::make('year_of_study')->disabled(),
                                         ]),
-                                    
+
                                     Grid::make(2)
                                         ->schema([
                                             TextInput::make('membership_type')->disabled(),
@@ -335,7 +335,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                             TextInput::make('approved_at')->disabled(),
                                         ]),
                                 ]),
-                            
+
                             Section::make('Privacy Settings')
                                 ->schema([
                                     CheckboxList::make('privacy_settings')
@@ -352,7 +352,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         ])
                                         ->disabled(),
                                 ]),
-                            
+
                             Section::make('Approval Information')
                                 ->schema([
                                     TextInput::make('approval_notes')->disabled(),
@@ -377,33 +377,33 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         ->circleCropper()
                                         ->maxSize(2048)
                                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
-                                    
+
                                     Grid::make(2)
                                         ->schema([
                                             TextInput::make('name')
                                                 ->required()
                                                 ->maxLength(255),
-                                            
+
                                             TextInput::make('email')
                                                 ->email()
                                                 ->required()
                                                 ->unique(ignoreRecord: true)
                                                 ->maxLength(255),
-                                            
+
                                             TextInput::make('student_id')
                                                 ->label('Student ID')
                                                 ->required()
                                                 ->unique(ignoreRecord: true)
                                                 ->maxLength(50),
-                                            
+
                                             TextInput::make('phone')
                                                 ->tel()
                                                 ->maxLength(20),
-                                            
+
                                             TextInput::make('program')
                                                 ->label('Program/Course')
                                                 ->maxLength(100),
-                                            
+
                                             Select::make('year_of_study')
                                                 ->label('Year of Study')
                                                 ->options([
@@ -414,7 +414,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                                     5 => 'Year 5',
                                                 ]),
                                         ]),
-                                    
+
                                     Grid::make(2)
                                         ->schema([
                                             Select::make('membership_type')
@@ -425,7 +425,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                                     'alumni' => 'Alumni',
                                                 ])
                                                 ->required(),
-                                            
+
                                             Select::make('membership_status')
                                                 ->label('Membership Status')
                                                 ->options([
@@ -436,10 +436,10 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                                     'rejected' => 'Rejected',
                                                 ])
                                                 ->required(),
-                                            
+
                                             DatePicker::make('joined_at')
                                                 ->label('Joined Date'),
-                                            
+
                                             CheckboxList::make('privacy_settings')
                                                 ->label('Privacy Settings')
                                                 ->options([
@@ -454,7 +454,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                                 ])
                                                 ->columns(2),
                                         ]),
-                                    
+
                                     Select::make('roles')
                                         ->label('Roles')
                                         ->multiple()
@@ -462,7 +462,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         ->preload()
                                         ->searchable(),
                                 ]),
-                            
+
                             Section::make('Approval Information')
                                 ->schema([
                                     Textarea::make('approval_notes')
@@ -478,7 +478,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                 $record->syncRoles($data['roles']);
                             }
 
-                            $record->logActivity('updated', 'User', $record->id, $oldValues, $record->toArray());
+                            // $record->logActivity('updated', 'User', $record->id, $oldValues, $record->toArray());
 
                             Notification::make()
                                 ->title('Member updated successfully')
@@ -507,11 +507,11 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                         ])
                         ->action(function (User $record, array $data) {
                             $record->approve(Auth::user(), $data['approval_notes']);
-                            
+
                             if (!empty($data['roles'])) {
                                 $record->syncRoles($data['roles']);
                             }
-                            
+
                             Notification::make()
                                 ->title('Member approved successfully')
                                 ->success()
@@ -531,7 +531,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                         ])
                         ->action(function (User $record, array $data) {
                             $record->reject(Auth::user(), $data['rejection_notes']);
-                            
+
                             Notification::make()
                                 ->title('Member rejected')
                                 ->danger()
@@ -563,7 +563,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                         ->action(function (User $record, array $data) {
                             $until = $data['suspended_until'] ? \Carbon\Carbon::parse($data['suspended_until']) : null;
                             $record->suspend($data['reason'], Auth::user(), $until);
-                            
+
                             Notification::make()
                                 ->title('Member suspended')
                                 ->warning()
@@ -577,7 +577,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                             $oldValues = $record->toArray();
                             $record->delete();
 
-                            $record->logActivity('deleted', 'User', $record->id, $oldValues, null);
+                            // $record->logActivity('deleted', 'User', $record->id, $oldValues, null);
 
                             Notification::make()
                                 ->title('Member deleted successfully')
@@ -608,7 +608,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                     $record->approve(Auth::user(), $data['bulk_approval_notes']);
                                 }
                             });
-                            
+
                             Notification::make()
                                 ->title('Members approved successfully')
                                 ->success()
@@ -641,7 +641,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                     $record->suspend($data['reason'], Auth::user(), $until);
                                 }
                             });
-                            
+
                             Notification::make()
                                 ->title('Members suspended successfully')
                                 ->warning()
