@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('assignments:check-deadlines')->dailyAt('8am');
+Schedule::command('sessions:auto-status')->everyMinute();

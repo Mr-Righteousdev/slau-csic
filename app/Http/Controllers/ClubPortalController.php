@@ -9,6 +9,7 @@ use App\Models\ClubResourceProgress;
 use App\Models\Election;
 use App\Models\ElectionVote;
 use App\Models\Event;
+use App\Models\Meeting;
 use App\Models\User;
 use App\Services\HtbProfileSyncService;
 use Illuminate\Contracts\View\View;
@@ -34,10 +35,23 @@ class ClubPortalController extends Controller
             ->limit(4)
             ->get();
 
+        $ongoingTeachingSession = Meeting::teachingSessions()
+            ->where('attendance_open', true)
+            ->first();
+
+        $hasCheckedIn = false;
+        if ($ongoingTeachingSession && auth()->user()) {
+            $hasCheckedIn = $ongoingTeachingSession->attendance()
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
+
         return view('pages.club.portal', [
             'title' => 'Club Portal',
             'resourcesByCategory' => $resources->groupBy('category'),
             'upcomingEvents' => $upcomingEvents,
+            'ongoingTeachingSession' => $ongoingTeachingSession,
+            'hasCheckedInToTeachingSession' => $hasCheckedIn,
             'metrics' => [
                 'active_tracks' => $portalProgress->where('status', 'in_progress')->count(),
                 'completed_tracks' => $portalProgress->where('status', 'completed')->count(),

@@ -16,7 +16,7 @@ class Event extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($event) {
             if (empty($event->slug)) {
                 $event->slug = Str::slug($event->title);
@@ -43,8 +43,6 @@ class Event extends Model
         'registration_fee',
         'external_link',
     ];
-
-    
 
     protected function casts(): array
     {
@@ -112,5 +110,10 @@ class Event extends Model
         }
 
         return max(0, $this->max_participants - $this->registered_count);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }

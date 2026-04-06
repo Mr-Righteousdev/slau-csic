@@ -16,6 +16,9 @@ class Attendance extends Model
         'user_id',
         'checked_in_at',
         'check_in_method',
+        'status',
+        'late_threshold_minutes',
+        'is_auto_absent',
         'location',
         'device_info',
         'ip_address',
@@ -25,6 +28,7 @@ class Attendance extends Model
 
     protected $casts = [
         'checked_in_at' => 'datetime',
+        'is_auto_absent' => 'boolean',
     ];
 
     // ============================================
@@ -68,6 +72,50 @@ class Attendance extends Model
             'nfc' => 'NFC Tap',
             'admin_override' => 'Admin Override',
             default => ucfirst($this->check_in_method),
+        };
+    }
+
+    // ============================================
+    // STATUS HELPERS
+    // ============================================
+
+    public function isPresent(): bool
+    {
+        return $this->status === 'present';
+    }
+
+    public function isLate(): bool
+    {
+        return $this->status === 'late';
+    }
+
+    public function isAbsent(): bool
+    {
+        return $this->status === 'absent' || $this->is_auto_absent;
+    }
+
+    public function isPresentOrLate(): bool
+    {
+        return in_array($this->status, ['present', 'late']);
+    }
+
+    public function getStatusDisplayAttribute(): string
+    {
+        return match ($this->status) {
+            'present' => 'Present',
+            'late' => 'Late',
+            'absent' => 'Absent',
+            default => 'Unknown',
+        };
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'present' => 'green',
+            'late' => 'yellow',
+            'absent' => 'red',
+            default => 'gray',
         };
     }
 }

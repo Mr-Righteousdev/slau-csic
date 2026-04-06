@@ -173,7 +173,7 @@ class UserProfile extends Component
         $this->user->refresh();
 
         // Log activity
-        $this->user->logActivity('updated', 'Profile', $this->user->id, $oldValues, $this->user->toArray());
+        // $this->user->logActivity('updated', 'Profile', $this->user->id, $oldValues, $this->user->toArray());
 
         // Show success message
         $this->showSuccess = true;

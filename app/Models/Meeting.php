@@ -27,6 +27,7 @@ class Meeting extends Model
         'created_by',
         'agenda',
         'minutes',
+        'late_threshold_minutes',
     ];
 
     protected $casts = [
@@ -95,6 +96,23 @@ class Meeting extends Model
     public function scopeByType($query, $type)
     {
         return $query->where('type', $type);
+    }
+
+    public function scopeTeachingSessions($query)
+    {
+        return $query->where('type', 'teaching_session');
+    }
+
+    public function scopeCompletedTeachingSessions($query)
+    {
+        return $query->where('type', 'teaching_session')
+            ->whereNotNull('ended_at');
+    }
+
+    public function scopeActiveTeachingSessions($query)
+    {
+        return $query->where('type', 'teaching_session')
+            ->where('attendance_open', true);
     }
 
     // ============================================
@@ -218,5 +236,72 @@ class Meeting extends Model
             'checked_in_at' => now(),
             'check_in_method' => $method,
         ], $additionalData));
+    }
+
+    // ============================================
+    // TEACHING SESSION HELPERS
+    // ============================================
+
+    public function isTeachingSession(): bool
+    {
+        return $this->type === 'teaching_session';
+    }
+
+    public function getLateThresholdMinutes(): int
+    {
+        return $this->late_threshold_minutes ?? 15;
+    }
+
+    public function getStartTime(): ?\Carbon\Carbon
+    {
+        return $this->scheduled_at;
+    }
+
+    public function getEndTime(): ?\Carbon\Carbon
+    {
+        if ($this->ended_at) {
+            return $this->ended_at;
+        }
+
+        if ($this->scheduled_at && $this->duration_minutes) {
+            return $this->scheduled_at->copy()->addMinutes($this->duration_minutes);
+        }
+
+        return null;
+    }
+
+    public function getPresentCount(): int
+    {
+        return $this->attendance()->where('status', 'present')->count();
+    }
+
+    public function getLateCount(): int
+    {
+        return $this->attendance()->where('status', 'late')->count();
+    }
+
+    public function getAbsentCount(): int
+    {
+        return $this->attendance()
+            ->where('status', 'absent')
+            ->orWhereNull('status')
+            ->count();
+    }
+
+    public function isEligibleForCheckIn(): bool
+    {
+        if (! $this->isTeachingSession()) {
+            return false;
+        }
+
+        if (! $this->attendance_open) {
+            return false;
+        }
+
+        if ($this->hasEnded()) {
+            return false;
+        }
+
+        return true;
     }
 }

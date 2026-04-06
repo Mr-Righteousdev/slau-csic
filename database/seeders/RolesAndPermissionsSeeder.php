@@ -126,25 +126,36 @@ class RolesAndPermissionsSeeder extends Seeder
             // Student Portfolios
             'portfolio.view',
             'portfolio.manage',
+
+            // Teaching Sessions
+            'mark attendance',
+            'create teaching session',
+            'edit teaching session',
+            'delete teaching session',
+            'start teaching session',
+            'end teaching session',
+            'view leaderboard',
+            'checkin via qr',
+            'take eligibility snapshot',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create roles and assign permissions
 
         // 1. ADMIN/ADVISOR - All permissions
-        $admin = Role::create(['name' => 'admin']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->givePermissionTo(Permission::all());
 
-        $superAdmin = Role::create(['name' => 'super-admin']);
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
         $superAdmin->givePermissionTo(Permission::all());
 
         User::where('email', '=', 'super@gmail.com')->first()->assignRole($superAdmin);
 
         // 2. PRESIDENT - High-level management
-        $president = Role::create(['name' => 'president']);
+        $president = Role::firstOrCreate(['name' => 'president']);
         $president->givePermissionTo([
             'view_users', 'edit_users', 'approve_members', 'suspend_members',
             'view_meetings', 'create_meetings', 'edit_meetings', 'delete_meetings',
@@ -164,10 +175,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'teacher.events.view', 'teacher.events.rsvp', 'teacher.reports.view', 'teacher.dashboard.view',
             // Student Portfolios
             'portfolio.view', 'portfolio.manage',
+            // Teaching Sessions
+            'mark attendance', 'create teaching session', 'edit teaching session',
+            'start teaching session', 'end teaching session', 'view leaderboard',
         ]);
 
         // 3. VICE PRESIDENT - Assists president
-        $vicePresident = Role::create(['name' => 'vice_president']);
+        $vicePresident = Role::firstOrCreate(['name' => 'vice_president']);
         $vicePresident->givePermissionTo([
             'view_users', 'approve_members',
             'view_meetings', 'create_meetings', 'edit_meetings',
@@ -179,10 +193,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_reports', 'view_analytics',
             'access_admin_panel',
             'vote_in_elections',
+            // Teaching Sessions
+            'mark attendance', 'create teaching session', 'edit teaching session',
+            'start teaching session', 'end teaching session', 'view leaderboard',
         ]);
 
         // 4. SECRETARY - Records & communication
-        $secretary = Role::create(['name' => 'secretary']);
+        $secretary = Role::firstOrCreate(['name' => 'secretary']);
         $secretary->givePermissionTo([
             'view_users',
             'view_meetings', 'create_meetings', 'edit_meetings',
@@ -192,10 +209,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_reports',
             'access_admin_panel',
             'vote_in_elections',
+            // Teaching Sessions
+            'mark attendance', 'view leaderboard',
         ]);
 
         // 5. TREASURER - Financial management
-        $treasurer = Role::create(['name' => 'treasurer']);
+        $treasurer = Role::firstOrCreate(['name' => 'treasurer']);
         $treasurer->givePermissionTo([
             'view_users',
             'view_meetings',
@@ -209,7 +228,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // 6. HEAD OF PROJECTS
-        $headProjects = Role::create(['name' => 'head_projects']);
+        $headProjects = Role::firstOrCreate(['name' => 'head_projects']);
         $headProjects->givePermissionTo([
             'view_users',
             'view_meetings', 'view_attendance',
@@ -221,7 +240,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // 7. HEAD OF CTF & TRAINING
-        $headCtf = Role::create(['name' => 'head_ctf']);
+        $headCtf = Role::firstOrCreate(['name' => 'head_ctf']);
         $headCtf->givePermissionTo([
             'view_users',
             'view_meetings', 'view_attendance',
@@ -234,7 +253,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // 8. HEAD OF MEDIA & DESIGN
-        $headMedia = Role::create(['name' => 'head_media']);
+        $headMedia = Role::firstOrCreate(['name' => 'head_media']);
         $headMedia->givePermissionTo([
             'view_meetings', 'view_attendance',
             'view_events',
@@ -246,7 +265,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // 9. HEAD OF INNOVATIONS & RESEARCH
-        $headInnovations = Role::create(['name' => 'head_innovations']);
+        $headInnovations = Role::firstOrCreate(['name' => 'head_innovations']);
         $headInnovations->givePermissionTo([
             'view_users',
             'view_meetings', 'view_attendance',
@@ -258,7 +277,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // 10. HEAD OF DISCIPLINE & SECURITY
-        $headDiscipline = Role::create(['name' => 'head_discipline']);
+        $headDiscipline = Role::firstOrCreate(['name' => 'head_discipline']);
         $headDiscipline->givePermissionTo([
             'view_users',
             'view_meetings', 'view_attendance', 'record_attendance_manual',
@@ -267,10 +286,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_audit_logs',
             'access_admin_panel',
             'vote_in_elections',
+            // Teaching Sessions
+            'mark attendance', 'view leaderboard',
         ]);
 
         // 11. ACTIVE MEMBER - Regular members
-        $member = Role::create(['name' => 'member']);
+        $member = Role::firstOrCreate(['name' => 'member']);
         $member->givePermissionTo([
             'view_meetings',
             'view_own_attendance',
@@ -284,10 +305,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'teacher.events.view', 'teacher.events.rsvp',
             // Student Portfolios
             'portfolio.view',
+            // Teaching Sessions
+            'checkin via qr', 'view leaderboard',
         ]);
 
         // 12. ASSOCIATE MEMBER - Limited access
-        $associate = Role::create(['name' => 'associate']);
+        $associate = Role::firstOrCreate(['name' => 'associate']);
         $associate->givePermissionTo([
             'view_meetings',
             'view_events',

@@ -11,12 +11,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Impersonate, Notifiable;
+    use LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -62,6 +65,12 @@ class User extends Authenticatable
         'suspension_reason',
         'suspended_until',
         'suspended_by',
+        'attendance_count',
+        'total_sessions_attended',
+        'current_streak',
+        'longest_streak',
+        'bonus_points',
+        'score',
     ];
 
     /**
@@ -94,6 +103,15 @@ class User extends Authenticatable
             'approved_at' => 'datetime',
             'suspended_until' => 'datetime',
         ];
+    }
+
+    protected static $logAttributes = ['name', 'email'];
+
+
+     public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logOnly(['name', 'email']);
     }
 
     public function canImpersonate()
@@ -541,7 +559,7 @@ class User extends Authenticatable
         return [
             'total_attendance' => $this->attendance()->count(),
             'attendance_rate' => $this->getAttendanceRate(),
-            'events_attended' => $this->eventRegistrations()->where('attended', true)->count(),
+            'events_attended' => $this->eventRegistrations()->where('status', 'attended')->count(),
             'projects_led' => $this->projects()->count(),
             'projects_participated' => $this->projectMemberships()->count(),
             'competition_entries' => $competitionParticipations,
@@ -549,7 +567,7 @@ class User extends Authenticatable
             'club_portal_active_tracks' => $portalProgress->where('status', 'in_progress')->count(),
             'club_portal_completed_tracks' => $portalProgress->where('status', 'completed')->count(),
             'club_portal_average_progress' => (int) round($portalProgress->avg('progress_percentage') ?? 0),
-            'trainings_completed' => $this->trainingEnrollments()->where('completed', true)->count(),
+            'trainings_completed' => $this->trainingEnrollments()->where('status', 'completed')->count(),
             'meetings_this_semester' => $this->meetingsThisSemester(),
             'is_active_this_semester' => $this->isActiveThisSemester(),
             'membership_duration' => $this->joined_at ? now()->diffInMonths($this->joined_at) : 0,
@@ -681,5 +699,70 @@ class User extends Authenticatable
     public function getCanBeContactedAttribute(): bool
     {
         return $this->canBeContacted();
+    }
+
+    // ============================================
+    // LEADERBOARD HELPERS
+    // ============================================
+
+    public function getTeachingSessionAttendanceRate(): float
+    {
+        $totalSessions = Meeting::teachingSessions()
+            ->completedTeachingSessions()
+            ->count();
+
+        if ($totalSessions === 0) {
+            return 0;
+        }
+
+        $attendedSessions = $this->attendance()
+            ->whereHas('meeting', function ($query) {
+                $query->teachingSessions()
+                    ->completedTeachingSessions();
+            })
+            ->whereIn('status', ['present', 'late'])
+            ->count();
+
+        return round(($attendedSessions / $totalSessions) * 100, 2);
+    }
+
+    public function getTeachingSessionsAttended(): int
+    {
+        return $this->attendance()
+            ->whereHas('meeting', function ($query) {
+                $query->teachingSessions()
+                    ->completedTeachingSessions();
+            })
+            ->whereIn('status', ['present', 'late'])
+            ->count();
+    }
+
+    public function getTotalTeachingSessions(): int
+    {
+        return Meeting::teachingSessions()
+            ->completedTeachingSessions()
+            ->count();
+    }
+
+    public function calculateScore(): float
+    {
+        $attendanceRate = $this->getTeachingSessionAttendanceRate();
+        $consistencyScore = min($this->current_streak * 10, 100);
+        $bonusPoints = $this->bonus_points ?? 0;
+
+        return ($attendanceRate * 0.7) + ($consistencyScore * 0.2) + ($bonusPoints * 0.1);
+    }
+
+    public function isEligible(): bool
+    {
+        $attendanceRate = $this->getTeachingSessionAttendanceRate();
+        $sessionsAttended = $this->getTeachingSessionsAttended();
+
+        return $attendanceRate >= 75 && $sessionsAttended >= 5;
+    }
+
+    public function getAttendanceRank(): int
+    {
+        return User::where('score', '>', $this->score)->count() + 1;
     }
 }

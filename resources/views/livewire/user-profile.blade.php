@@ -390,7 +390,7 @@
                                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Profile Photo</h3>
                                         <div class="flex flex-col items-center">
                                             <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                                                <img src="{{ $user->profile_photo_url ?? 'https://via.placeholder.com/150' }}"
+                                                <img src="{{ $user->avatar_url }}"
                                                     alt="Profile Photo"
                                                     class="h-full w-full object-cover">
                                             </div>

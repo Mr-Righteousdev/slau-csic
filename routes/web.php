@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ElectionManagementController;
 use App\Http\Controllers\Admin\EventAttendanceController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClubPortalController;
 use App\Http\Controllers\Frontend\ProjectsPageController;
 use App\Http\Controllers\Frontend\PublicMemberPageController;
@@ -18,10 +19,14 @@ use App\Livewire\EventDetails;
 use App\Livewire\EventRegistration;
 use App\Livewire\MyEvents;
 use App\Livewire\Super\ManageUsers;
+use App\Livewire\Teaching\CreateTeachingSession;
 use App\Livewire\Teaching\ManageContent;
 use App\Livewire\Teaching\ManagePortfolios;
+use App\Livewire\Teaching\SessionDetail;
 use App\Livewire\Teaching\TeacherAnalytics;
 use App\Livewire\Teaching\TeacherEvents;
+use App\Livewire\Teaching\TeachingSessionCommands;
+use App\Livewire\Teaching\TeachingSessionList;
 use App\Livewire\UserProfile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +43,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/club/classes', [ClubPortalController::class, 'classes'])->name('portal.classes');
     Route::post('/club/voting/{election}', [ClubPortalController::class, 'castVote'])->name('portal.voting.cast');
     Route::post('/club/resources/{clubResource}/progress', [ClubPortalController::class, 'updateProgress'])->name('portal.progress.update');
+
+    // Attendance Routes
+    Route::get('/attendance/verify/{code}', [AttendanceController::class, 'showVerifyPage'])->name('attendance.verify');
+    Route::post('/attendance/verify/{code}', [AttendanceController::class, 'processCheckIn']);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -69,7 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // ADMIN ROUTES - Dashboard & Management
 
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin')->group(function () {
     // dashboard pages
     // Auth::user()->assignRole('secretary');
     Route::get('/', App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
@@ -91,7 +100,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/budget-categories', BudgetCategoryManagement::class)->name('admin.budget-categories');
     Route::get('/meetings', Meetings::class)->name('admin.meetings');
     Route::get('/meeting-details/{meeting}', MeetingDetails::class)->name('admin.meeting.details');
+    Route::get('/teaching-sessions', TeachingSessionList::class)->name('admin.teaching-sessions')->middleware('can:create teaching session');
+    Route::get('/teaching-sessions/create', CreateTeachingSession::class)->name('admin.teaching-sessions.create')->middleware('can:create teaching session');
+    Route::get('/teaching-sessions/{meeting}', SessionDetail::class)->name('admin.teaching-sessions.detail');
+    Route::get('/teaching-sessions/commands', TeachingSessionCommands::class)->name('admin.teaching-sessions.commands')->middleware('can:create teaching session');
     Route::get('/roles-permissions', RolePermissionManager::class)->name('admin.roles-permissions');
+    Route::get('/pending-members', \App\Livewire\Admin\PendingMembers::class)->name('admin.pending-members');
     Route::get('/fines', \App\Livewire\Admin\FinesManagement::class)->name('admin.fines');
     Route::get('/fine-types', \App\Livewire\Admin\FineTypesManagement::class)->name('admin.fine-types');
 

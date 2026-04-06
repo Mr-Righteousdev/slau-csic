@@ -27,6 +27,45 @@
 
 @section('content')
     <div class="space-y-6">
+        @if($ongoingTeachingSession)
+            <div 
+                x-data="{ show: true }" 
+                x-init="setTimeout(() => { 
+                    if (!sessionStorage.getItem('qrNotificationShown')) {
+                        show = true;
+                        sessionStorage.setItem('qrNotificationShown', 'true');
+                    } else {
+                        show = false;
+                    }
+                }, 500)"
+                x-show="show"
+                x-transition
+                class="rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white shadow-lg relative overflow-hidden"
+            >
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHYwem0wIDBoNjB2NjBIMHYweiIgZmlsbD0ibm9uZSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idHJhbnNwYXJlbnQiLz48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuMDUiIGZvcm1jdHVyZT0icG9pbnRzKDAvNjAsMCA2MC82LCA2MC82LCAwLzYwKSIvPjwvc3ZnPg==')] opacity-30"></div>
+                <div class="relative flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold">Teaching Session In Progress!</h3>
+                            <p class="text-sm text-white/90">{{ $ongoingTeachingSession->title }}</p>
+                            <p class="text-xs text-white/70 mt-1">{{ $ongoingTeachingSession->location }}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-sm">
+                            Scan QR Code to Check In
+                        </span>
+                        <p class="text-xs text-white/60">Ask your facilitator for the QR code</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-8">
             <div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                 <div class="space-y-4">
