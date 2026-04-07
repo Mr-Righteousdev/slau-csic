@@ -50,11 +50,13 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
             ->query(User::query())
             ->columns([
 
-                ImageColumn::make('profile_photo')
+                ImageColumn::make('photo')
                     ->label('')
+                    ->getStateUsing(fn (User $record): string => $record->avatar_url)
                     ->circular()
-                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&color=FFFFFF&background=6366f1'),
-
+                    ->extraImgAttributes(['referrerpolicy' => 'no-referrer']),
+                    // Tell Filament not to run this through a disk
+                    // ->disk(null), // <--- this is key
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -213,16 +215,16 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                     ->label('Add New Member')
                     ->modalHeading('Add New Club Member')
                     ->schema([
-                        FileUpload::make('profile_photo')  // Changed from 'logo' to 'profile_photo' to match your model
+                        FileUpload::make('profile_photo')
                             ->label('Profile Photo')
                             ->image()
                             ->imageEditor()
-                            ->directory('users/profile-photos')
+                             ->disk('public')
+                            ->directory('profile-photos')
                             ->downloadable()
                             ->avatar()
                             ->circleCropper()
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
+                            ->maxSize(5120),
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255),
@@ -315,15 +317,16 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                     ViewAction::make()
                         ->extraAttributes(['class' => 'z-9999999'])
                         ->schema([
-                            FileUpload::make('profile_photo')  // Changed from 'logo' to 'profile_photo' to match your model
+                            FileUpload::make('profile_photo')
                                 ->label('Profile Photo')
                                 ->image()
                                 ->imageEditor()
-                                ->directory('users/profile-photos')
+                                ->directory('profile-photos')
                                 ->downloadable()
                                 ->avatar()
+                                 ->disk('public')
                                 ->circleCropper()
-                                ->maxSize(2048)
+                                ->maxSize(5120)
                                 ->disabled(),
                             TextInput::make('name')
                                 ->disabled(),
@@ -359,16 +362,16 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                         ->slideOver()
                         ->extraAttributes(['class' => 'z-9999999'])
                         ->schema([
-                            FileUpload::make('profile_photo')  // Changed from 'logo' to 'profile_photo' to match your model
+                            FileUpload::make('profile_photo')
                                 ->label('Profile Photo')
                                 ->image()
                                 ->imageEditor()
-                                ->directory('users/profile-photos')
+                                 ->disk('public')
+                                ->directory('profile-photos')
                                 ->downloadable()
                                 ->avatar()
                                 ->circleCropper()
-                                ->maxSize(2048)
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
+                                ->maxSize(5120),
                             TextInput::make('name')
                                 ->required()
                                 ->maxLength(255),
@@ -511,8 +514,8 @@ class ManageUsers extends Component implements HasActions, HasForms, HasTable
                                     'membership_status' => 'active',
                                     'approved_at' => now(),
                                     'approved_by' => Auth::user()->id,
-                                    'approval_notes' => "Approved via users manager.",
-                            ]);
+                                    'approval_notes' => 'Approved via users manager.',
+                                ]);
                             }
                             // $record->logActivity(
                             //     'status_changed',

@@ -17,14 +17,14 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -49,8 +49,9 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
         return $table
             ->query(User::query()->with(['roles', 'approvedByUser', 'suspendedByUser']))
             ->columns([
-                ImageColumn::make('profile_photo')
+                ImageColumn::make('photo')
                     ->label('')
+                    ->getStateUsing(fn (User $record): string => $record->avatar_url)
                     ->circular()
                     ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&color=FFFFFF&background=6366f1'),
 
@@ -194,11 +195,10 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                             ->label('Profile Photo')
                             ->image()
                             ->imageEditor()
-                            ->directory('users/profile-photos')
+                            ->directory('profile-photos')
                             ->avatar()
                             ->circleCropper()
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
+                            ->maxSize(5120),
 
                         Grid::make(2)
                             ->schema([
@@ -372,11 +372,10 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                                         ->label('Profile Photo')
                                         ->image()
                                         ->imageEditor()
-                                        ->directory('users/profile-photos')
+                                        ->directory('profile-photos')
                                         ->avatar()
                                         ->circleCropper()
-                                        ->maxSize(2048)
-                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif']),
+                                        ->maxSize(5120),
 
                                     Grid::make(2)
                                         ->schema([
@@ -508,7 +507,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
                         ->action(function (User $record, array $data) {
                             $record->approve(Auth::user(), $data['approval_notes']);
 
-                            if (!empty($data['roles'])) {
+                            if (! empty($data['roles'])) {
                                 $record->syncRoles($data['roles']);
                             }
 
@@ -572,7 +571,7 @@ class MemberManagement extends Component implements HasActions, HasForms, HasTab
 
                     DeleteAction::make()
                         ->requiresConfirmation()
-                        ->visible(fn (User $record): bool => !$record->isSuperAdmin())
+                        ->visible(fn (User $record): bool => ! $record->isSuperAdmin())
                         ->action(function (User $record) {
                             $oldValues = $record->toArray();
                             $record->delete();

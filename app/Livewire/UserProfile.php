@@ -67,7 +67,7 @@ class UserProfile extends Component
 
     public $successMessage = '';
 
-    public function mount()
+    public function mount(): void
     {
         $this->user = Auth::user();
 
@@ -86,32 +86,28 @@ class UserProfile extends Component
         $this->is_discord_member = $this->user->is_discord_member;
 
         // Set current profile photo preview
-        $this->profile_photo_preview = $this->user->profile_photo
-            ? Storage::url($this->user->profile_photo)
-            : 'https://ui-avatars.com/api/?name='.urlencode($this->user->name).'&color=FFFFFF&background=6366f1';
+        $this->profile_photo_preview = $this->user->avatar_url;
     }
 
-    public function updatedProfilePhoto()
+    public function updatedProfilePhoto(): void
     {
         $this->validate([
-            'profile_photo' => 'nullable|image|max:2048', // 2MB max
+            'profile_photo' => 'nullable|image|max:5120',
         ]);
 
-        // Create temporary preview
         $this->temp_photo = $this->profile_photo->temporaryUrl();
         $this->profile_photo_preview = $this->temp_photo;
     }
 
-    public function removePhoto()
+    public function removePhoto(): void
     {
         $this->profile_photo = null;
         $this->temp_photo = null;
-        $this->profile_photo_preview = 'https://ui-avatars.com/api/?name='.urlencode($this->user->name).'&color=FFFFFF&background=6366f1';
+        $this->profile_photo_preview = $this->user->avatar_url;
     }
 
-    public function save()
+    public function save(): void
     {
-        // Validate all fields except password
         $this->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$this->user->id,
@@ -124,29 +120,19 @@ class UserProfile extends Component
             'github_username' => 'nullable|string|max:50',
             'linkedin_url' => 'nullable|url|max:255',
             'discord_username' => 'nullable|string|max:50',
-            'profile_photo' => 'nullable|image|max:2048',
+            'profile_photo' => 'nullable|image|max:5120',
             'password' => 'nullable|min:8|confirmed',
         ]);
 
-        // Save old values for logging
-        $oldValues = $this->user->toArray();
-
-        // / Handle profile photo upload
         if ($this->profile_photo) {
-            // Delete old photo if exists
             if ($this->user->profile_photo && Storage::disk('public')->exists($this->user->profile_photo)) {
                 Storage::disk('public')->delete($this->user->profile_photo);
             }
 
-            // Store new photo
             $path = $this->profile_photo->store('profile-photos', 'public');
-
-            // Store ONLY the relative path (without 'app/public/')
-            $relativePath = str_replace('app/public/', '', $path);
-            $this->user->profile_photo = $relativePath;
+            $this->user->profile_photo = $path;
         }
 
-        // Update user data
         $this->user->update([
             'name' => $this->name,
             'email' => $this->email,
@@ -162,42 +148,30 @@ class UserProfile extends Component
             'is_discord_member' => $this->is_discord_member,
         ]);
 
-        // Update password if provided
         if ($this->password) {
             $this->user->update([
                 'password' => bcrypt($this->password),
             ]);
         }
 
-        // Update the user instance
         $this->user->refresh();
-
-        // Log activity
-        // $this->user->logActivity('updated', 'Profile', $this->user->id, $oldValues, $this->user->toArray());
-
-        // Show success message
         $this->showSuccess = true;
         $this->successMessage = 'Profile updated successfully!';
 
-        // Reset password fields
         $this->reset(['password', 'password_confirmation']);
 
-        // Update profile photo preview
-        if ($this->user->profile_photo) {
-            $this->profile_photo_preview = Storage::url($this->user->profile_photo);
-        }
+        $this->profile_photo_preview = $this->user->avatar_url;
+
         Notification::make()
             ->title('Profile updated successfully!')
             ->color('success')
             ->success()
             ->send();
-        // Dispatch event to update sidebar/profile display
         $this->dispatch('profile-updated');
 
         $this->editMode = false;
         $this->showSuccess = true;
         $this->successMessage = 'Profile updated successfully!';
-
     }
 
     public function render()

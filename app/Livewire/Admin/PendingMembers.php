@@ -30,8 +30,9 @@ class PendingMembers extends Component implements HasActions, HasForms, HasTable
         return $table
             ->query(User::query()->pendingApproval()->with(['roles']))
             ->columns([
-                ImageColumn::make('profile_photo')
+                ImageColumn::make('photo')
                     ->label('')
+                    ->getStateUsing(fn (User $record): string => $record->avatar_url)
                     ->circular()
                     ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&color=FFFFFF&background=6366f1'),
 

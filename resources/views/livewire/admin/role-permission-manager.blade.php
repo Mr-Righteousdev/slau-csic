@@ -147,7 +147,7 @@
                                         <div class="flex -space-x-2">
                                             @forelse($role->users->take(3) as $user)
                                                 <img class="h-8 w-8 rounded-full border-2 border-white dark:border-gray-800"
-                                                     src="{{ $user->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random&color=fff' }}"
+                                                     src="{{ $user->avatar_url }}"
                                                      alt="{{ $user->name }}">
                                             @empty
                                             @endforelse
@@ -357,7 +357,7 @@
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
                                             <img class="h-10 w-10 rounded-full"
-                                                 src="{{ $user->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random&color=fff' }}"
+                                                 src="{{ $user->avatar_url }}"
                                                  alt="{{ $user->name }}">
                                         </div>
                                         <div class="ml-4">
@@ -683,4 +683,3 @@
         </x-filament::modal>
 
 </div>
-

@@ -132,7 +132,7 @@
                                             </div>
 
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                                                JPG, PNG or GIF. Max size 2MB.
+                                                Upload any image and adjust it here. Max size 5MB.
                                             </p>
                                         </div>
                                     </div>
@@ -570,4 +570,3 @@
         </div>
     </div>
 </div>
-

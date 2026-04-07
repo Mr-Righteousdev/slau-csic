@@ -114,9 +114,8 @@ class User extends Authenticatable
             ->logOnly(['name', 'email']);
     }
 
-    public function canImpersonate()
+    public function canImpersonate(): bool
     {
-        // For example
         return $this->hasRole('super-admin');
     }
 
@@ -307,31 +306,31 @@ class User extends Authenticatable
     }
 
     // In User model
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): string
     {
-        // If user has a custom profile photo
         if ($this->profile_photo) {
-            // Check if it's a full URL
             if (filter_var($this->profile_photo, FILTER_VALIDATE_URL)) {
                 return $this->profile_photo;
             }
 
-            // Check if it's in storage
             if (Storage::exists('public/'.$this->profile_photo)) {
                 return Storage::url($this->profile_photo);
             }
 
-            // Check if it's in public storage
             if (file_exists(public_path('storage/'.$this->profile_photo))) {
                 return asset('storage/'.$this->profile_photo);
             }
         }
 
-        // Fallback to generated avatar
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=FFFFFF&background=6366f1&bold=true';
     }
 
-    public function getAvatarInitialsAttribute()
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        return $this->avatar_url;
+    }
+
+    public function getAvatarInitialsAttribute(): string
     {
         return strtoupper(substr($this->name, 0, 2));
     }

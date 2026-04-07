@@ -42,7 +42,7 @@ class StoreMemberRegistrationRequest extends FormRequest
             'github_username' => ['nullable', 'string', 'max:50'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'discord_username' => ['nullable', 'string', 'max:50'],
-            'profile_photo' => ['required', 'image', 'max:3072'],
+            'profile_photo' => ['required', 'image', 'max:5120'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'terms' => ['accepted'],
         ];
@@ -55,7 +55,9 @@ class StoreMemberRegistrationRequest extends FormRequest
     {
         return [
             'student_id.required' => 'A student identification number is required for club records.',
-            'profile_photo.required' => 'Please upload a clear passport-style photo for the member directory.',
+            'profile_photo.required' => 'Please upload a clear profile photo for your member account.',
+            'profile_photo.image' => 'The uploaded file must be an image.',
+            'profile_photo.max' => 'Your profile photo should be 5MB or smaller.',
             'bio.min' => 'Your profile summary should briefly explain your interests and goals in the club.',
             'terms.accepted' => 'You need to accept the club platform terms before continuing.',
         ];
