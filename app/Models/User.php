@@ -455,6 +455,8 @@ class User extends Authenticatable
                 'approval_notes' => $notes,
             ]);
 
+            $this->assignRole('member');
+
             // $this->logActivity('member_approved', 'User', $this->id, null, [
             //     'approved_by' => $approver?->name,
             //     'approved_at' => now()->toDateTimeString(),
