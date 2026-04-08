@@ -28,9 +28,9 @@
 @section('content')
     <div class="space-y-6">
         @if($ongoingTeachingSession)
-            <div 
-                x-data="{ show: true }" 
-                x-init="setTimeout(() => { 
+            <div
+                x-data="{ show: true }"
+                x-init="setTimeout(() => {
                     if (!sessionStorage.getItem('qrNotificationShown')) {
                         show = true;
                         sessionStorage.setItem('qrNotificationShown', 'true');

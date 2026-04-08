@@ -2,12 +2,21 @@
 @import 'prismjs/themes/prism.min.css';
 @import 'tailwindcss';
 
+/* Preline UI */
+@import "../../node_modules/preline/variants.css";
+@import "../../node_modules/preline/css/themes/theme.css";
+@source "../../node_modules/preline/dist/*.js";
+
+/* Plugins */
+@plugin "@tailwindcss/forms";
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-*: initial;
@@ -973,4 +982,12 @@ pre[class*='language-'] {
 
 .menu-group[x-data*="financial"] .submenu-item-active {
     @apply border-l-4 border-brand-500 dark:border-brand-400;
+}
+
+/* Adds pointer cursor to buttons */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
