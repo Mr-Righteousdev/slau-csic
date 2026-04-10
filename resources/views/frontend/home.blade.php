@@ -320,7 +320,7 @@
                     <p class="eyebrow">Frequently Asked Questions</p>
                     <h2 class="section-title">Clarifying the homepage message</h2>
                 </div>
-                <a href="{{ route('contact') }}" class="cyber-outline-button">Contact the Club</a>
+                <a href="{{ route('contact') }}" class="cyber-outline-button">Contact the Club Cabinet</a>
             </div>
 
             <div class="mt-8 grid gap-5 lg:grid-cols-2">

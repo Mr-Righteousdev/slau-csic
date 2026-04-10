@@ -20,6 +20,10 @@ Welcome to the project! Please follow these rules to keep our code clean, consis
    ```bash
    git checkout develop
    git pull origin develop
+   composer install
+   npm install
+   npm run build 
+   php artisan migrate
    ```
 
 2. Create a new branch:
