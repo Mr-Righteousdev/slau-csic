@@ -103,6 +103,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($this->canStartSession($session))
+                                        <button
+                                            wire:click="startSession({{ $session->id }})"
+                                            class="text-green-600 hover:text-green-900 mr-3"
+                                        >
+                                            Start
+                                        </button>
+                                    @endif
                                     <a 
                                         href="{{ route('admin.teaching-sessions.detail', $session) }}"
                                         class="text-blue-600 hover:text-blue-900 mr-3"
