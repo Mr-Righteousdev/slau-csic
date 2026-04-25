@@ -9,7 +9,7 @@
 ## Phase Summary
 
 - [ ] **Phase 1: Event Categories & Organization** - Categories, color coding, filtering, search
-- [ ] **Phase 2: RSVP System** - RSVP with capacity limits, confirmation feedback
+- [x] **Phase 2: RSVP System** - RSVP with capacity limits, confirmation feedback (completed 2026-04-25)
 - [ ] **Phase 3: Attendee Management** - Attendee list view, management tools
 - [ ] **Phase 4: Calendar Views** - Week/day views, navigation
 - [ ] **Phase 5: Recurring Events** - Weekly recurrence, instance generation
@@ -46,7 +46,7 @@ Phase 5 (Recurring Events) ← depends on Phase 2 (RSVP ready)
   3. User can filter event list by category
   4. User can search events by keyword
 
-**Plans**: TBD
+**Plans**: [ ] 01-01-PLAN.md — Event categories & organization
 
 ### Phase 2: RSVP System
 
@@ -62,7 +62,7 @@ Phase 5 (Recurring Events) ← depends on Phase 2 (RSVP ready)
   3. Event detail page shows "X/Y spots filled" count
   4. User cannot RSVP to full event
 
-**Plans**: TBD
+**Plans**: [x] 02-01-PLAN.md — RSVP with capacity limits and confirmation
 
 ### Phase 3: Attendee Management
 
@@ -77,7 +77,7 @@ Phase 5 (Recurring Events) ← depends on Phase 2 (RSVP ready)
   2. Admin can cancel/modify attendee registrations
   3. User can cancel their own RSVP
 
-**Plans**: TBD
+**Plans**: [ ] 03-01-PLAN.md — Admin attendee list with management
 
 ### Phase 4: Calendar Views
 
@@ -128,9 +128,9 @@ Phase 5 (Recurring Events) ← depends on Phase 2 (RSVP ready)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Event Categories & Organization | 0/1 | Not started | - |
-| 2. RSVP System | 0/1 | Not started | - |
-| 3. Attendee Management | 0/1 | Not started | - |
+| 1. Event Categories & Organization | 1/1 | Planning complete | - |
+| 2. RSVP System | 1/1 | Complete   | 2026-04-25 |
+| 3. Attendee Management | 1/1 | Planning complete | - |
 | 4. Calendar Views | 0/1 | Not started | - |
 | 5. Recurring Events | 0/1 | Not started | - |
 
