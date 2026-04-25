@@ -79,6 +79,88 @@ class EventCards extends Component
         return Auth::check() && Auth::user()->hasAnyRole(['admin', 'super-admin', 'member']);
     }
 
+    public function rsvpForEvent($eventId)
+    {
+        if (!Auth::check()) {
+            $this->dispatch('show-notification', message: 'Please login to RSVP for events.', type: 'error');
+            return;
+        }
+
+        $event = Event::findOrFail($eventId);
+
+        if ($event->is_full) {
+            $this->dispatch('show-notification', message: 'This event is full.', type: 'error');
+            return;
+        }
+
+        // Create or update registration with RSVP status
+        $event->registrations()->updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+            ],
+            [
+                'status' => 'registered',
+                'rsvp_status' => 'attending',
+                'registered_at' => now(),
+            ]
+        );
+
+        $this->dispatch('show-notification', message: "You're confirmed for this event!", type: 'success');
+    }
+
+    public function cancelRsvp($eventId)
+    {
+        if (!Auth::check()) {
+            return;
+        }
+
+        $event = Event::findOrFail($eventId);
+
+        $registration = $event->registrations()
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($registration) {
+            $registration->update(['rsvp_status' => 'not_attending']);
+            $this->dispatch('show-notification', message: "You've declined this event.", type: 'success');
+        }
+    }
+
+    public function getRemainingSpots($event): int|string
+    {
+        if (!$event->max_participants) {
+            return 'Unlimited';
+        }
+
+        return $event->remaining_spots;
+    }
+
+    public function isUserAttending($event): bool
+    {
+        if (!Auth::check()) {
+            return false;
+        }
+
+        $registration = $event->registrations()
+            ->where('user_id', Auth::user()->id)
+            ->first();
+
+        return $registration && $registration->isAttending();
+    }
+
+    public function getRsvpStatus($event): ?string
+    {
+        if (!Auth::check()) {
+            return null;
+        }
+
+        $registration = $event->registrations()
+            ->where('user_id', Auth::user()->id)
+            ->first();
+
+        return $registration?->rsvp_status;
+    }
+
     public function registerForEvent($eventId)
     {
         if (!Auth::check()) {
