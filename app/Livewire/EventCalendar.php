@@ -3,16 +3,19 @@
 namespace App\Livewire;
 
 use App\Models\Event as CalendarEvent;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 
 class EventCalendar extends Component
 {
     public $events = [];
+
     public $selectedEvent = null;
+
     public $modalOpen = false;
+
     public $canCreateEvent = false;
 
     public function mount()
@@ -23,9 +26,9 @@ class EventCalendar extends Component
         try {
             // Try to use the Event model
             $count = CalendarEvent::count();
-            Log::debug('Event model exists, count: ' . $count);
+            Log::debug('Event model exists, count: '.$count);
         } catch (\Exception $e) {
-            Log::error('Event model error: ' . $e->getMessage());
+            Log::error('Event model error: '.$e->getMessage());
         }
 
         // Check if user can create events
@@ -43,7 +46,7 @@ class EventCalendar extends Component
                 ->where('status', 'scheduled')
                 ->get();
 
-            Log::debug('Found ' . $events->count() . ' events');
+            Log::debug('Found '.$events->count().' events');
 
             $this->events = $events->map(function ($event) {
                 return [
@@ -58,12 +61,14 @@ class EventCalendar extends Component
                     'url' => route('events.show', $event->slug),
                     'allDay' => $event->start_date->format('H:i:s') === '00:00:00' &&
                                $event->end_date->format('H:i:s') === '00:00:00',
+                    'is_recurring' => $event->is_recurring,
+                    'parent_event_id' => $event->parent_event_id,
                 ];
             })->toArray();
 
         } catch (\Exception $e) {
-            Log::error('Error loading events: ' . $e->getMessage());
-            Log::error('Trace: ' . $e->getTraceAsString());
+            Log::error('Error loading events: '.$e->getMessage());
+            Log::error('Trace: '.$e->getTraceAsString());
             $this->events = [];
         }
     }
@@ -71,12 +76,15 @@ class EventCalendar extends Component
     protected function getEventColor($type)
     {
         return match ($type) {
-            'workshop' => '#10b981', // green
-            'seminar' => '#3b82f6',  // blue
-            'meeting' => '#8b5cf6',  // purple
-            'social' => '#f59e0b',   // amber
+            'workshop' => '#10b981',    // green
             'competition' => '#ef4444', // red
-            default => '#6b7280',    // gray
+            'ctf' => '#dc2626',         // darker red for CTF
+            'bootcamp' => '#8b5cf6',    // purple
+            'awareness_campaign' => '#f59e0b', // amber/yellow
+            'talk' => '#3b82f6',        // blue
+            'social' => '#6366f1',     // indigo
+            'hackathon' => '#f97316',  // orange
+            default => '#6b7280',      // gray
         };
     }
 
@@ -90,7 +98,7 @@ class EventCalendar extends Component
                 $this->modalOpen = true;
             }
         } catch (\Exception $e) {
-            Log::error('Error handling event click: ' . $e->getMessage());
+            Log::error('Error handling event click: '.$e->getMessage());
         }
     }
 
@@ -110,8 +118,9 @@ class EventCalendar extends Component
     public function createEvent($eventData)
     {
         // Only allow authenticated users to create events
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             $this->dispatch('show-notification', message: 'You must be logged in to create events.', type: 'error');
+
             return;
         }
 
@@ -131,26 +140,28 @@ class EventCalendar extends Component
 
             $this->loadEvents();
             $this->dispatch('show-notification', message: 'Event created successfully!', type: 'success');
-            
+
         } catch (\Exception $e) {
-            Log::error('Error creating event: ' . $e->getMessage());
+            Log::error('Error creating event: '.$e->getMessage());
             $this->dispatch('show-notification', message: 'Failed to create event.', type: 'error');
         }
     }
 
     public function updateEvent($eventId, $eventData)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             $this->dispatch('show-notification', message: 'You must be logged in to update events.', type: 'error');
+
             return;
         }
 
         try {
             $event = CalendarEvent::findOrFail($eventId);
-            
+
             // Only allow organizer or admin to update
-            if ($event->organizer_id !== Auth::id() && !Auth::user()->hasRole('admin')) {
+            if ($event->organizer_id !== Auth::id() && ! Auth::user()->hasRole('admin')) {
                 $this->dispatch('show-notification', message: 'You can only update your own events.', type: 'error');
+
                 return;
             }
 
@@ -165,14 +176,12 @@ class EventCalendar extends Component
 
             $this->loadEvents();
             $this->dispatch('show-notification', message: 'Event updated successfully!', type: 'success');
-            
+
         } catch (\Exception $e) {
-            Log::error('Error updating event: ' . $e->getMessage());
+            Log::error('Error updating event: '.$e->getMessage());
             $this->dispatch('show-notification', message: 'Failed to update event.', type: 'error');
         }
     }
-
-    
 
     private function mapColorToType($color)
     {
@@ -187,7 +196,8 @@ class EventCalendar extends Component
 
     public function render()
     {
-        Log::debug('Rendering EventCalendar with ' . count($this->events) . ' events');
+        Log::debug('Rendering EventCalendar with '.count($this->events).' events');
+
         return view('livewire.event-calendar');
     }
 }

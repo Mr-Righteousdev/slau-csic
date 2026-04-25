@@ -3,17 +3,18 @@
 namespace App\Livewire;
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class EventCards extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $filter = 'all';
+
     public $perPage = 12;
 
     protected $queryString = [
@@ -30,15 +31,15 @@ class EventCards extends Component
     public function getEventsProperty()
     {
         $query = Event::where('is_public', true)
-            ->whereIn('status', ['published', 'ongoing'])
-            ->with(['organizer', 'registrations']);
+            ->whereIn('status', ['published', 'ongoing', 'scheduled'])
+            ->with(['organizer', 'registrations', 'recurrence']);
 
         // Apply search
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('title', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%')
-                  ->orWhere('location', 'like', '%' . $this->search . '%');
+                $q->where('title', 'like', '%'.$this->search.'%')
+                    ->orWhere('description', 'like', '%'.$this->search.'%')
+                    ->orWhere('location', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -71,7 +72,7 @@ class EventCards extends Component
         }
 
         return $query->orderBy('start_date', 'asc')
-                   ->paginate($this->perPage);
+            ->paginate($this->perPage);
     }
 
     public function getCanCreateEventsProperty()
@@ -81,8 +82,9 @@ class EventCards extends Component
 
     public function rsvpForEvent($eventId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             $this->dispatch('show-notification', message: 'Please login to RSVP for events.', type: 'error');
+
             return;
         }
 
@@ -90,6 +92,7 @@ class EventCards extends Component
 
         if ($event->is_full) {
             $this->dispatch('show-notification', message: 'This event is full.', type: 'error');
+
             return;
         }
 
@@ -110,7 +113,7 @@ class EventCards extends Component
 
     public function cancelRsvp($eventId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return;
         }
 
@@ -128,7 +131,7 @@ class EventCards extends Component
 
     public function getRemainingSpots($event): int|string
     {
-        if (!$event->max_participants) {
+        if (! $event->max_participants) {
             return 'Unlimited';
         }
 
@@ -137,7 +140,7 @@ class EventCards extends Component
 
     public function isUserAttending($event): bool
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 
@@ -150,7 +153,7 @@ class EventCards extends Component
 
     public function getRsvpStatus($event): ?string
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return null;
         }
 
@@ -163,8 +166,9 @@ class EventCards extends Component
 
     public function registerForEvent($eventId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             $this->dispatch('show-notification', message: 'Please login to register for events.', type: 'error');
+
             return;
         }
 
@@ -177,12 +181,14 @@ class EventCards extends Component
 
         if ($existing) {
             $this->dispatch('show-notification', message: 'You are already registered for this event.', type: 'warning');
+
             return;
         }
 
         // Check if event is full
         if ($event->max_participants && $event->registered_count >= $event->max_participants) {
             $this->dispatch('show-notification', message: 'This event is full.', type: 'error');
+
             return;
         }
 
@@ -198,7 +204,7 @@ class EventCards extends Component
 
     public function unregisterFromEvent($eventId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return;
         }
 
@@ -218,15 +224,16 @@ class EventCards extends Component
 
     public function deleteEvent($eventId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return;
         }
 
         $event = Event::findOrFail($eventId);
 
         // Only allow organizer or admin to delete
-        if ($event->organizer_id !== Auth::id() && !Auth::user()->hasRole('admin')) {
+        if ($event->organizer_id !== Auth::id() && ! Auth::user()->hasRole('admin')) {
             $this->dispatch('show-notification', message: 'You can only delete your own events.', type: 'error');
+
             return;
         }
 
@@ -239,7 +246,7 @@ class EventCards extends Component
      */
     public function getEventTypeColor($event): string
     {
-        return match($event->type) {
+        return match ($event->type) {
             'workshop' => 'green',
             'competition' => 'red',
             'ctf' => 'red',
@@ -257,7 +264,7 @@ class EventCards extends Component
      */
     public function isUserRegistered($event): bool
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 
@@ -271,7 +278,7 @@ class EventCards extends Component
      */
     public function canUserEdit($event): bool
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 

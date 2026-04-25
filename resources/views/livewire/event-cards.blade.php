@@ -75,9 +75,19 @@
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="flex items-start justify-between mb-2">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $event->title }}</h3>
-                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-{{ $badgeColor }}-100 text-{{ $badgeColor }}-800 dark:bg-{{ $badgeColor }}-900/40 dark:text-{{ $badgeColor }}-300">
-                            {{ $label }}
-                        </span>
+                        <div class="flex flex-col items-end gap-1">
+                            @if($event->is_recurring)
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Recurring weekly
+                                </span>
+                            @endif
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-{{ $badgeColor }}-100 text-{{ $badgeColor }}-800 dark:bg-{{ $badgeColor }}-900/40 dark:text-{{ $badgeColor }}-300">
+                                {{ $label }}
+                            </span>
+                        </div>
                     </div>
                     <p class="text-gray-600 dark:text-gray-300 mb-4">{{ Str::limit($event->description, 150) }}</p>
                     <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
