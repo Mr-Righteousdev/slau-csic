@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('assignments:check-deadlines')->dailyAt('8am');
 Schedule::command('sessions:auto-status')->everyMinute();
+Schedule::command('events:generate-recurring')->dailyAt('1am');
