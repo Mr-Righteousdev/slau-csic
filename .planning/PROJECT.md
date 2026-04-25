@@ -47,18 +47,19 @@ Existing features:
 
 ### Validated
 
-- ✓ Event creation and editing — existing
-- ✓ Event display pages — existing
-- ✓ Basic attendee tracking — existing
-- ✓ Calendar component exists — existing
+- ✓ Event creation and editing — existing (pre-v1.0)
+- ✓ Event display pages — existing (pre-v1.0)
+- ✓ Basic attendee tracking — existing (pre-v1.0)
+- ✓ Calendar component exists — existing (pre-v1.0)
+- ✓ Event categories — v1.0
+- ✓ Event filtering and search — v1.0
+- ✓ RSVP system with capacity limits — v1.0
+- ✓ Attendee management tools — v1.0
+- ✓ Recurring event support — v1.0
 
 ### Active
 
-- [ ] RSVP system with capacity limits
-- [ ] Attendee management tools
-- [ ] Recurring event support
-- [ ] Event categories
-- [ ] Event filtering and search
+(None yet — next milestone TBD)
 
 ### Out of Scope
 
@@ -66,6 +67,29 @@ Existing features:
 - Event RSVP waitlists — defer to v2
 - Event collaboration/co-hosting — defer to v2
 - Event check-in system — defer to v2
+- Monthly recurrence patterns — defer to v2
+- iCal export of events — defer to v2
+
+---
+
+## Current State (v1.0 Shipped)
+
+**Milestone:** v1.0 Event Enhancements MVP — COMPLETED 2026-04-25
+
+### What Was Built
+
+- **Event Categories**: Category badges on cards, color coding in calendar, pill toggle filters
+- **RSVP System**: Capacity limits with hard stop, X/Y spots display, confirmation toasts
+- **Attendee Management**: Admin attendee list view, cancel registrations, user self-cancel
+- **Calendar Views**: Month/week/day views with navigation (already existed, verified)
+- **Recurring Events**: Weekly recurrence, instance generation, series editing
+
+### New Files Created
+
+- `app/Services/RecurrenceGenerator.php` - Recurring event instance generation
+- `app/Console/Commands/GenerateRecurringEvents.php` - Daily scheduled command
+- `app/Livewire/Admin/EventAttendees.php` - Admin attendee management
+- Database migrations: rsvp_status, is_recurring, parent_event_id, cancelled_at
 
 ---
 
@@ -73,18 +97,31 @@ Existing features:
 
 | Decision | Rationale | Outcome |
 |----------|---------|---------|
-| RSVP vs registration | Events need RSVP for capacity control | RSVP with yes/no |
-| Calendar library | Already using FullCalendar | Continue with FullCalendar |
-| Recurring pattern | Weekly club meetings common | Weekly/monthly patterns |
+| RSVP vs registration | Events need RSVP for capacity control | ✓ RSVP with yes/no - implemented |
+| Calendar library | Already using FullCalendar | ✓ Continue with FullCalendar |
+| Recurring pattern | Weekly club meetings common | ✓ Weekly patterns - implemented |
+| Category storage | Use existing type field | ✓ No new columns needed |
+| Filter UX | Pill toggles for categories | ✓ User-friendly filtering |
 
 ---
 
 ## Technical Notes
 
-- Event model already has `max_attendees` potential field
-- Need recurring_events table for pattern storage
-- Categories can use existing approach (model + enum)
-- Calendar needs API endpoint for event data
+- Event model already has `max_participants`, `is_full`, `registered_count` attributes
+- EventRegistration model extended with rsvp_status column
+- RecurrenceGenerator uses hybrid approach (3 months ahead)
+- Calendar already supports month/week/day views via FullCalendar
+
+---
+
+## Next Milestone Goals
+
+To be defined via `/gsd-new-milestone`. Potential areas:
+- Event notifications (email/push)
+- Event waitlists
+- Advanced recurrence (monthly patterns)
+- iCal export
+- Event check-in system
 
 ---
 
@@ -107,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-04-25 after initialization*
+*Last updated: 2026-04-25 after v1.0 milestone*
