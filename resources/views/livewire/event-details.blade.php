@@ -58,6 +58,14 @@
                                 </svg>
                                 <span>{{ $event->registered_count }}/{{ $event->max_participants }} registered</span>
                             </div>
+                            <div class="mt-2">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="h-2 rounded-full {{ $isFull ? 'bg-red-500' : 'bg-green-500' }}"
+                                         style="width: {{ $event->max_participants ? ($event->registered_count / $event->max_participants * 100) : 0 }}%">
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">{{ $remainingSpots }} remaining</span>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -65,6 +73,32 @@
                 @if($event->registration_required)
                     <livewire:event-registration :event="$event" />
                 @endif
+
+                <!-- RSVP Section -->
+                <div class="mt-4">
+                    @if($userRsvpStatus === 'attending')
+                        <button disabled class="w-full px-4 py-2 bg-green-500 text-white rounded-lg cursor-not-allowed">
+                            Going
+                        </button>
+                        <button
+                            wire:click="cancelRsvp"
+                            class="w-full mt-2 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
+                        >
+                            Can't Go
+                        </button>
+                    @elseif($isFull)
+                        <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+                            Event Full
+                        </button>
+                    @else
+                        <button
+                            wire:click="rsvpForEvent"
+                            class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                        >
+                            RSVP
+                        </button>
+                    @endif
+                </div>
             </div>
         </div>
         
