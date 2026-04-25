@@ -8,6 +8,7 @@ use App\Http\Controllers\Frontend\ProjectsPageController;
 use App\Http\Controllers\Frontend\PublicMemberPageController;
 use App\Livewire\Admin\BudgetCategoryManagement;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\EventAttendees;
 use App\Livewire\Admin\EventsManagement;
 use App\Livewire\Admin\FinancialReports;
 use App\Livewire\Admin\MeetingDetails;
@@ -86,6 +87,7 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin')->group(fu
     // Route::get('/user-profile', UserProfile::class)->name('admin.users');
     Route::get('/users', ManageUsers::class)->name('admin.users');
     Route::get('/events', EventsManagement::class)->name('admin.events');
+    Route::get('/events/{event}/attendees', EventAttendees::class)->name('admin.event-attendees');
     Route::get('/events/{event}/attendance', [EventAttendanceController::class, 'show'])->name('admin.events.attendance');
     Route::post('/events/{event}/attendance/{registration}', [EventAttendanceController::class, 'mark'])->name('admin.events.attendance.mark');
     Route::get('/elections', [ElectionManagementController::class, 'index'])->name('admin.elections');

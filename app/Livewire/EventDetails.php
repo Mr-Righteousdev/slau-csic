@@ -16,6 +16,8 @@ class EventDetails extends Component
 
     public int|string $remainingSpots = 0;
 
+    public bool $confirmingCancel = false;
+
     public function mount(Event $event)
     {
         $this->event = $event->load('registrations');
@@ -80,6 +82,22 @@ class EventDetails extends Component
             $this->loadRsvpState();
             $this->dispatch('show-notification', message: "You've declined this event.", type: 'success');
         }
+    }
+
+    public function confirmCancel(): void
+    {
+        $this->confirmingCancel = true;
+    }
+
+    public function confirmedCancel(): void
+    {
+        $this->cancelRsvp();
+        $this->confirmingCancel = false;
+    }
+
+    public function cancelConfirmation(): void
+    {
+        $this->confirmingCancel = false;
     }
 
     public function isUserAttending(): bool
