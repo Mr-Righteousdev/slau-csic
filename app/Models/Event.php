@@ -42,6 +42,9 @@ class Event extends Model
         'requirements',
         'registration_fee',
         'external_link',
+        'is_recurring',
+        'parent_event_id',
+        'cancelled_at',
     ];
 
     protected function casts(): array
@@ -53,6 +56,8 @@ class Event extends Model
             'gallery' => 'array',
             'registration_required' => 'boolean',
             'is_public' => 'boolean',
+            'is_recurring' => 'boolean',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -86,6 +91,103 @@ class Event extends Model
     public function recurrence(): HasMany
     {
         return $this->hasMany(EventRecurrence::class);
+    }
+
+    public function getRecurrenceAttribute()
+    {
+        return $this->recurrence()->first();
+    }
+
+    /**
+     * Check if this event is a recurring event series master
+     */
+    public function isRecurring(): bool
+    {
+        return (bool) $this->is_recurring;
+    }
+
+    /**
+     * Check if this event is an occurrence of a recurring series
+     */
+    public function isOccurrence(): bool
+    {
+        return $this->parent_event_id !== null;
+    }
+
+    /**
+     * Get the master event for this occurrence
+     */
+    public function masterEvent(): BelongsTo
+    {
+        return $this->belongsTo(Event::class, 'parent_event_id');
+    }
+
+    /**
+     * Get all occurrences of this recurring event
+     */
+    public function occurrences(): HasMany
+    {
+        return $this->hasMany(Event::class, 'parent_event_id');
+    }
+
+    /**
+     * Check if this is the master event of a series
+     */
+    public function isMasterEvent(): bool
+    {
+        return $this->is_recurring && ! $this->parent_event_id;
+    }
+
+    /**
+     * Get all future occurrences (including the master if future)
+     */
+    public function getFutureOccurrences()
+    {
+        $query = Event::where(function ($q) {
+            $q->where('parent_event_id', $this->id)
+                ->orWhere('id', $this->id);
+        })
+            ->where('start_date', '>=', now())
+            ->orderBy('start_date', 'asc');
+
+        return $query;
+    }
+
+    /**
+     * Sync changes to all future occurrences
+     */
+    public function syncOccurrences(): void
+    {
+        if (! $this->is_recurring) {
+            return;
+        }
+
+        $fieldsToSync = [
+            'description',
+            'location',
+            'max_participants',
+            'registration_required',
+            'is_public',
+            'registration_deadline',
+            'requirements',
+            'registration_fee',
+            'external_link',
+        ];
+
+        $this->occurrences()
+            ->where('start_date', '>', now())
+            ->update(array_fill_keys($fieldsToSync, null));
+    }
+
+    /**
+     * Skip a specific occurrence date
+     */
+    public function skipOccurrence(Event $occurrence): void
+    {
+        $occurrence->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+        ]);
     }
 
     public function getRegisteredCountAttribute(): int
