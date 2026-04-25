@@ -51,10 +51,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RSVP-01 | Phase 2 | Pending |
-| RSVP-02 | Phase 2 | Pending |
-| RSVP-03 | Phase 2 | Pending |
-| RSVP-04 | Phase 2 | Pending |
+| RSVP-01 | Phase 2 | Complete |
+| RSVP-02 | Phase 2 | Complete |
+| RSVP-03 | Phase 2 | Complete |
+| RSVP-04 | Phase 2 | Complete |
 | ATT-01 | Phase 3 | Pending |
 | ATT-02 | Phase 3 | Pending |
 | ATT-03 | Phase 3 | Pending |
