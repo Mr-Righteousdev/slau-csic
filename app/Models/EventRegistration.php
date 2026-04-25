@@ -14,6 +14,7 @@ class EventRegistration extends Model
         'event_id',
         'user_id',
         'status',
+        'rsvp_status',
         'registered_at',
         'attended_at',
         'notes',
@@ -54,5 +55,15 @@ class EventRegistration extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    public function isAttending(): bool
+    {
+        return $this->rsvp_status === 'attending';
+    }
+
+    public function isNotAttending(): bool
+    {
+        return $this->rsvp_status === 'not_attending';
     }
 }
