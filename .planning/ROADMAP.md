@@ -108,7 +108,7 @@ Phase 5 (Recurring Events) ← depends on Phase 2 (RSVP ready)
   2. System generates next occurrence instances
   3. Editing series updates all future occurrences
 
-**Plans**: TBD
+**Plans**: [x] 05-01-PLAN.md — Recurring events with weekly generation
 
 ---
 

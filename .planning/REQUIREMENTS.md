@@ -66,9 +66,9 @@
 | CAT-02 | Phase 1 | Pending |
 | CAT-03 | Phase 1 | Pending |
 | CAT-04 | Phase 1 | Pending |
-| REC-01 | Phase 5 | Pending |
-| REC-02 | Phase 5 | Pending |
-| REC-03 | Phase 5 | Pending |
+| REC-01 | Phase 5 | Complete |
+| REC-02 | Phase 5 | Complete |
+| REC-03 | Phase 5 | Complete |
 
 ---
 
