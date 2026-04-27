@@ -54,21 +54,21 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QB-01 | — | — |
-| QB-02 | — | — |
-| QB-03 | — | — |
-| QB-04 | — | — |
-| QB-05 | — | — |
-| QT-01 | — | — |
-| QT-02 | — | — |
-| QT-03 | — | — |
-| QT-04 | — | — |
-| QT-05 | — | — |
-| EXP-01 | — | — |
-| EXP-02 | — | — |
-| EXP-03 | — | — |
-| PERM-01 | — | — |
-| PERM-02 | — | — |
+| QB-01 | Phase 6 | Pending |
+| QB-02 | Phase 6 | Pending |
+| QB-03 | Phase 6 | Pending |
+| QB-04 | Phase 6 | Pending |
+| QB-05 | Phase 6 | Pending |
+| QT-01 | Phase 6 | Pending |
+| QT-02 | Phase 6 | Pending |
+| QT-03 | Phase 6 | Pending |
+| QT-04 | Phase 6 | Pending |
+| QT-05 | Phase 6 | Pending |
+| EXP-01 | Phase 6 | Pending |
+| EXP-02 | Phase 6 | Pending |
+| EXP-03 | Phase 6 | Pending |
+| PERM-01 | Phase 6 | Pending |
+| PERM-02 | Phase 6 | Pending |
 
 ---
 
