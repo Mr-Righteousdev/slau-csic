@@ -110,6 +110,14 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin')->group(fu
     Route::get('/pending-members', \App\Livewire\Admin\PendingMembers::class)->name('admin.pending-members');
     Route::get('/fines', \App\Livewire\Admin\FinesManagement::class)->name('admin.fines');
     Route::get('/fine-types', \App\Livewire\Admin\FineTypesManagement::class)->name('admin.fine-types');
+    Route::get('/questions', \App\Livewire\QuestionBank\Index::class)->name('question-bank.index');
+    Route::get('/questions/create', \App\Livewire\QuestionBank\Create::class)->name('question-bank.create');
+    Route::post('/questions', \App\Livewire\QuestionBank\Create::class)->name('question-bank.store');
+    Route::get('/questions/export', \App\Livewire\QuestionBank\Export::class)->name('question-bank.export');
+    Route::get('/questions/{question}/edit', \App\Livewire\QuestionBank\Edit::class)->name('question-bank.edit');
+    Route::put('/questions/{question}', \App\Livewire\QuestionBank\Edit::class)->name('question-bank.update');
+    Route::delete('/questions/{question}', \App\Livewire\QuestionBank\Index::class)->name('question-bank.destroy');
+    Route::post('/questions/{question}/restore', \App\Livewire\QuestionBank\Index::class)->name('question-bank.restore');
 
 });
 

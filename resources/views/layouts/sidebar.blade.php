@@ -531,9 +531,26 @@
                                         Roles & Permissions
                                     </span>
                                 </a>
-                            </li>
-                        @endhasrole
+</li>
 
+                            <li>
+                                <a href="{{ route('question-bank.index') }}" wire:navigate class="menu-item group"
+                                    :class="[
+                                        isActive('/admin/questions*') ? 'menu-item-active' : 'menu-item-inactive',
+                                        (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
+                                        'xl:justify-center' : 'justify-start'
+                                    ]">
+                                    <span :class="isActive('/admin/questions*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM4 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8-8-3.582-8-8Zm8-2c-.934 0-1.791.32-2.478.854l1.463 1.454a5.39 5.39 0 00-.634.692c-.394-.524-.631-1.167-.631-1.857 0-.376.062-.739.175-1.083l-1.238.619c-.17.408-.269.843-.269 1.321 0 .152.013.301.038.447A5.406 5.406 0 008.116 9.54l1.464-1.463A7.972 7.972 0 0112 4c.322 0 .639.019.951.054l-.512 1.577c-.217-.022-.434-.031-.651-.031-.69 0-1.352.102-1.974.293l.74 1.425c.425-.137.871-.21 1.326-.21Z" fill="currentColor"></path></svg>
+                                    </span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                                        class="menu-item-text flex items-center gap-2">
+                                        Questions
+                                    </span>
+                                </a>
+                            </li>
+
+                        @endhasrole
 
 
                     </ul>
