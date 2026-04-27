@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: verifying
-stopped_at: Completed 05-recurring-events plan
-last_updated: "2026-04-25T03:44:36.665Z"
-last_activity: 2026-04-25
+milestone: v1.1
+milestone_name: Question Bank Module
+status: defining_requirements
+stopped_at: Started new milestone
+last_updated: "2026-04-27T00:00:00.000Z"
+last_activity: 2026-04-27
 progress:
   total_phases: 5
   completed_phases: 5
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-25)
 
 ## Current Position
 
-Phase: 4 of 5 (Calendar Views)
-Plan: 1 of 1 in current phase
-Status: Phase complete — ready for verification
-Last activity: 2026-04-25
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-27 — Milestone v1.1 started
 
 Progress: [░░░░░░░░░░] 0%
 

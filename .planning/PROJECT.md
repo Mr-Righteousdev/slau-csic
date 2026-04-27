@@ -59,7 +59,7 @@ Existing features:
 
 ### Active
 
-(None yet — next milestone TBD)
+- Question Bank module integration — v1.1
 
 ### Out of Scope
 
@@ -69,6 +69,18 @@ Existing features:
 - Event check-in system — defer to v2
 - Monthly recurrence patterns — defer to v2
 - iCal export of events — defer to v2
+
+---
+
+## Current Milestone: v1.1 Question Bank Module
+
+**Goal:** Integrate standalone Question Bank module into SLAU CSIC app for creating, managing, and exporting questions
+
+**Target features:**
+- Question Bank with MCQ, True/False, Short Answer, Code Snippet types
+- Question CRUD (Create, Read, Update, Delete)
+- JSON export for ExamShield import
+- Admin-only access
 
 ---
 
@@ -144,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-04-25 after v1.0 milestone*
+*Last updated: 2026-04-27 during v1.1 milestone*
