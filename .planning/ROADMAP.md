@@ -41,7 +41,10 @@
 13. Export generates valid JSON file with all question data and options
 14. Exported JSON follows ExamShield import format schema
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [x] 06-01-PLAN.md — Full CRUD, multiple question types, export
 
 **UI hint:** yes
 
@@ -51,7 +54,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Question Bank Module | 0/1 | Not started | - |
+| 6. Question Bank Module | 1/1 | Planned | - |
 
 ---
 
