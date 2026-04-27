@@ -81,17 +81,35 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — Points ledger, badges, ranks, leaderboard foundation
+- [x] 07-01-PLAN.md — Points ledger, badges, ranks, leaderboard foundation
 
 ### Phase 8: CTF Management - competitions, challenges, submissions, writeups, scoreboard
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Admins can create CTF competitions with challenges across categories. Members browse active competitions, solve challenges by submitting flags (hashed and validated), earn points via the gamification system, view the live scoreboard, and submit writeups for solved challenges.
+
 **Depends on:** Phase 7
-**Plans:** 0 plans
+
+**Requirements:** CTF-01, CTF-02, CTF-03, CTF-04, CTF-05, CTF-06, CTF-07, CTF-08, CTF-09, CTF-10, CTF-11, CTF-12
+
+**Success Criteria** (what must be TRUE):
+1. Admins can create CTF competitions with title, description, start/end dates, status, and visibility
+2. Admins can create challenges within competitions with category, difficulty, points, and flag (stored as SHA256 hash)
+3. Admins can create and manage challenge categories (Web, Crypto, Forensics, PWN, Reversing, OSINT, Misc)
+4. Members can view a list of active, published CTF competitions
+5. Members can view competition detail with challenges grouped by category
+6. Members can submit flags for challenges
+7. Correct flags award points via GamificationService and mark challenge as solved
+8. Incorrect flags are rejected with error message; already-solved challenges show "already solved"
+9. Each user can only have one successful solve per challenge (unique constraint)
+10. Scoreboard displays top users by total points for the competition (correct submissions only)
+11. Members can submit writeups for solved challenges (pending review by admin)
+12. Admins can view all CTF submissions as an audit log
+
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md — CTF foundation: migrations, models, services, admin CRUD
+- [ ] 08-02-PLAN.md — CTF member UI: competition pages, flag submission, scoreboard, writeups
 
 ### Phase 9: Exams & Assessments - exam creation, question bank, timed tests, AI grading, results
 
