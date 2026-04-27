@@ -80,12 +80,32 @@
                         <button disabled class="w-full px-4 py-2 bg-green-500 text-white rounded-lg cursor-not-allowed">
                             Going
                         </button>
-                        <button
-                            wire:click="cancelRsvp"
-                            class="w-full mt-2 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
-                        >
-                            Can't Go
-                        </button>
+                        @if($confirmingCancel)
+                            <div class="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                <p class="text-sm text-gray-700 mb-3">Are you sure you want to cancel your RSVP for this event?</p>
+                                <div class="flex gap-2">
+                                    <button
+                                        wire:click="confirmedCancel"
+                                        class="flex-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm rounded transition-colors"
+                                    >
+                                        Yes, Cancel RSVP
+                                    </button>
+                                    <button
+                                        wire:click="cancelConfirmation"
+                                        class="flex-1 px-3 py-1.5 bg-gray-300 hover:bg-gray-400 text-gray-700 text-sm rounded transition-colors"
+                                    >
+                                        Keep RSVP
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <button
+                                wire:click="confirmCancel"
+                                class="w-full mt-2 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
+                            >
+                                Can't Go
+                            </button>
+                        @endif
                     @elseif($isFull)
                         <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
                             Event Full

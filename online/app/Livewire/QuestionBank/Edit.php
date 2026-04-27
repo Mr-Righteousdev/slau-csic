@@ -6,9 +6,11 @@ use App\Models\QuestionBankOption;
 use App\Models\QuestionBankQuestion;
 use Livewire\Component;
 
-class Create extends Component
+class Edit extends Component
 {
-    public string $type = 'mcq';
+    public QuestionBankQuestion $question;
+
+    public string $type = '';
 
     public string $question_text = '';
 
@@ -24,15 +26,29 @@ class Create extends Component
 
     public ?int $selectedCorrect = null;
 
-    public function mount()
+    public function mount(QuestionBankQuestion $question)
     {
-        $this->options = [
-            ['option_text' => '', 'is_correct' => false],
-            ['option_text' => '', 'is_correct' => false],
-        ];
+        $this->question = $question;
+
+        $this->type = $question->type;
+        $this->question_text = $question->question_text;
+        $this->code_block = $question->code_block ?? '';
+        $this->code_language = $question->code_language ?? '';
+        $this->marks = $question->marks;
+        $this->explanation = $question->explanation ?? '';
+
+        foreach ($question->options as $index => $option) {
+            $this->options[$index] = [
+                'option_text' => $option->option_text,
+                'is_correct' => (bool) $option->is_correct,
+            ];
+            if ($option->is_correct && $this->type === 'true_false') {
+                $this->selectedCorrect = $index;
+            }
+        }
     }
 
-    public function updatedType(string $value): void
+    public function updatedType($value)
     {
         $this->options = [];
         $this->selectedCorrect = null;
@@ -66,33 +82,28 @@ class Create extends Component
         }
     }
 
-    protected function rules(): array
+    public function save()
     {
-        $rules = [
+        $this->validate([
             'type' => 'required|in:mcq,true_false,short_answer,code_snippet',
             'question_text' => 'required|string',
             'code_block' => 'nullable|string',
             'code_language' => 'nullable|string|max:50',
             'marks' => 'required|integer|min:1',
             'explanation' => 'nullable|string',
-        ];
+        ]);
 
-        if (in_array($this->type, ['mcq', 'true_false'])) {
-            $rules['options'] = 'required|array|min:2';
-            $rules['options.*.option_text'] = 'required|string';
-        }
+        if (in_array($this->type, ['mcq', 'code_snippet'])) {
+            $this->validate([
+                'options' => 'required|array|min:2',
+                'options.*.option_text' => 'required|string',
+            ]);
 
-        return $rules;
-    }
-
-    protected function validateCorrect(): bool
-    {
-        if ($this->type === 'mcq') {
             $hasCorrect = collect($this->options)->contains('is_correct', true);
             if (! $hasCorrect) {
                 session()->flash('error', 'At least one option must be marked as correct.');
 
-                return false;
+                return;
             }
         }
 
@@ -100,23 +111,11 @@ class Create extends Component
             if ($this->selectedCorrect === null) {
                 session()->flash('error', 'Please select the correct answer.');
 
-                return false;
+                return;
             }
         }
 
-        return true;
-    }
-
-    public function save()
-    {
-        $this->validate();
-
-        if (! $this->validateCorrect()) {
-            return;
-        }
-
-        $question = QuestionBankQuestion::create([
-            'user_id' => auth()->id(),
+        $this->question->update([
             'type' => $this->type,
             'question_text' => $this->question_text,
             'code_block' => $this->code_block ?: null,
@@ -125,67 +124,28 @@ class Create extends Component
             'explanation' => $this->explanation ?: null,
         ]);
 
-        $this->saveOptions($question);
+        $this->question->options()->delete();
 
-        return redirect()->route('question-bank.index')->with('success', 'Question created.');
-    }
-
-    public function saveAndContinue()
-    {
-        $this->validate();
-
-        if (! $this->validateCorrect()) {
-            return;
-        }
-
-        $question = QuestionBankQuestion::create([
-            'user_id' => auth()->id(),
-            'type' => $this->type,
-            'question_text' => $this->question_text,
-            'code_block' => $this->code_block ?: null,
-            'code_language' => $this->code_language ?: null,
-            'marks' => $this->marks,
-            'explanation' => $this->explanation ?: null,
-        ]);
-
-        $this->saveOptions($question);
-
-        session()->flash('success', 'Question created. Add another.');
-
-        $this->reset([
-            'question_text',
-            'code_block',
-            'code_language',
-            'marks',
-            'explanation',
-        ]);
-        $this->options = [
-            ['option_text' => '', 'is_correct' => false],
-            ['option_text' => '', 'is_correct' => false],
-        ];
-        $this->selectedCorrect = null;
-    }
-
-    protected function saveOptions(QuestionBankQuestion $question): void
-    {
-        if (in_array($this->type, ['mcq', 'true_false'])) {
+        if (in_array($this->type, ['mcq', 'true_false', 'code_snippet'])) {
             foreach ($this->options as $index => $optionData) {
                 $isCorrect = $this->type === 'true_false'
                     ? ($index === $this->selectedCorrect)
                     : ($optionData['is_correct'] ?? false);
 
                 QuestionBankOption::create([
-                    'question_id' => $question->id,
+                    'question_id' => $this->question->id,
                     'option_text' => $optionData['option_text'],
                     'is_correct' => $isCorrect,
                     'order' => $index,
                 ]);
             }
         }
+
+        return redirect()->route('question-bank.index')->with('success', 'Question updated.');
     }
 
     public function render()
     {
-        return view('livewire.question-bank.create');
+        return view('livewire.question-bank.edit');
     }
 }

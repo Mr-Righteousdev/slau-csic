@@ -32,7 +32,7 @@ class Create extends Component
         ];
     }
 
-    public function updatedType(string $value): void
+    public function updatedType($value)
     {
         $this->options = [];
         $this->selectedCorrect = null;
@@ -77,7 +77,7 @@ class Create extends Component
             'explanation' => 'nullable|string',
         ];
 
-        if (in_array($this->type, ['mcq', 'true_false'])) {
+        if (in_array($this->type, ['mcq', 'code_snippet'])) {
             $rules['options'] = 'required|array|min:2';
             $rules['options.*.option_text'] = 'required|string';
         }
@@ -87,7 +87,7 @@ class Create extends Component
 
     protected function validateCorrect(): bool
     {
-        if ($this->type === 'mcq') {
+        if ($this->type === 'mcq' || $this->type === 'code_snippet') {
             $hasCorrect = collect($this->options)->contains('is_correct', true);
             if (! $hasCorrect) {
                 session()->flash('error', 'At least one option must be marked as correct.');
@@ -168,7 +168,7 @@ class Create extends Component
 
     protected function saveOptions(QuestionBankQuestion $question): void
     {
-        if (in_array($this->type, ['mcq', 'true_false'])) {
+        if (in_array($this->type, ['mcq', 'true_false', 'code_snippet'])) {
             foreach ($this->options as $index => $optionData) {
                 $isCorrect = $this->type === 'true_false'
                     ? ($index === $this->selectedCorrect)

@@ -10,30 +10,23 @@ return new class extends Migration
     {
         Schema::create('question_bank_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('type');
             $table->text('question_text');
             $table->text('code_block')->nullable();
-            $table->string('code_language')->nullable();
+            $table->string('code_language', 50)->nullable();
             $table->integer('marks')->default(1);
             $table->text('explanation')->nullable();
+            $table->timestamps();
             $table->softDeletes();
-            $table->timestamps();
-        });
 
-        Schema::create('question_bank_options', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('question_id')->constrained('question_bank_questions')->onDelete('cascade');
-            $table->string('option_text');
-            $table->boolean('is_correct')->default(false);
-            $table->integer('order')->default(0);
-            $table->timestamps();
+            $table->index(['type']);
+            $table->index(['created_at']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('question_bank_options');
         Schema::dropIfExists('question_bank_questions');
     }
 };
