@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -72,6 +73,7 @@ class User extends Authenticatable
         'longest_streak',
         'bonus_points',
         'score',
+        'rank',
     ];
 
     /**
@@ -103,6 +105,7 @@ class User extends Authenticatable
             'htb_last_synced_at' => 'datetime',
             'approved_at' => 'datetime',
             'suspended_until' => 'datetime',
+            'rank_changed_at' => 'datetime',
         ];
     }
 
@@ -765,5 +768,80 @@ class User extends Authenticatable
     public function getAttendanceRank(): int
     {
         return User::where('score', '>', $this->score)->count() + 1;
+    }
+
+    // ============================================
+    // GAMIFICATION METHODS
+    // ============================================
+
+    /**
+     * Rank thresholds for automatic rank upgrades.
+     */
+    public const RANK_THRESHOLDS = [
+        'bronze' => 0,
+        'silver' => 200,
+        'gold' => 500,
+        'platinum' => 1000,
+    ];
+
+    /**
+     * Get the user's point transactions.
+     */
+    public function pointTransactions(): HasMany
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    /**
+     * Get badges earned by this user.
+     */
+    public function earnedBadges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the total points earned by this user.
+     */
+    public function getTotalPointsAttribute(): int
+    {
+        return $this->pointTransactions()->sum('points') ?? 0;
+    }
+
+    /**
+     * Get the current rank based on total points.
+     */
+    public function getCurrentRankAttribute(): string
+    {
+        $points = $this->total_points;
+
+        if ($points >= self::RANK_THRESHOLDS['platinum']) {
+            return 'platinum';
+        }
+        if ($points >= self::RANK_THRESHOLDS['gold']) {
+            return 'gold';
+        }
+        if ($points >= self::RANK_THRESHOLDS['silver']) {
+            return 'silver';
+        }
+
+        return 'bronze';
+    }
+
+    /**
+     * Sync the user's rank based on their current total points.
+     */
+    public function syncRank(): void
+    {
+        $newRank = $this->current_rank;
+
+        if ($this->rank !== $newRank) {
+            $this->update([
+                'rank' => $newRank,
+                'rank_changed_at' => now(),
+            ]);
+        }
     }
 }
