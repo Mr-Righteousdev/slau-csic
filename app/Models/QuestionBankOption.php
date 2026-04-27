@@ -21,6 +21,6 @@ class QuestionBankOption extends Model
 
     public function question(): BelongsTo
     {
-        return $this->belongsTo(QuestionBankQuestion::class);
+        return $this->belongsTo(QuestionBankQuestion::class, 'question_id');
     }
 }

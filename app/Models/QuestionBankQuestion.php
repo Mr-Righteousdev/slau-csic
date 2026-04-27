@@ -27,7 +27,7 @@ class QuestionBankQuestion extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(QuestionBankOption::class)->orderBy('order');
+        return $this->hasMany(QuestionBankOption::class, 'question_id')->orderBy('order');
     }
 
     public function creator(): BelongsTo
