@@ -1,49 +1,52 @@
-# REQUIREMENTS.md — SLAU CSIC Event Enhancements
+# Requirements: v1.1 Question Bank Module
 
-## Active Requirements
+## Categories
 
-### RSVP System (RSVP)
+### QB — Question Bank Core
 
-| ID | Requirement | Category | Status |
-|----|------------|----------|--------|
-| RSVP-01 | User can RSVP to events with yes/no response | RSVP | Pending |
-| RSVP-02 | System enforces capacity limits (hard stop) | RSVP | Pending |
-| RSVP-03 | User can see attendee count display (X/Y spots) | RSVP | Pending |
-| RSVP-04 | User receives RSVP confirmation feedback | RSVP | Pending |
+- [ ] **QB-01**: Admin can view list of all questions in the bank
+- [ ] **QB-02**: Admin can create a new question with type selection
+- [ ] **QB-03**: Admin can edit existing questions
+- [ ] **QB-04**: Admin can delete (soft delete) questions
+- [ ] **QB-05**: Admin can search questions by text content
 
-### Attendee Management (ATT)
+### QT — Question Types
 
-| ID | Requirement | Category | Status |
-|----|------------|----------|--------|
-| ATT-01 | Admin can view attendee list per event | ATT | Pending |
-| ATT-02 | Admin can manage attendee registrations | ATT | Pending |
-| ATT-03 | User can cancel their RSVP | ATT | Pending |
+- [ ] **QT-01**: Support MCQ type with 2-6 options and multiple correct answers
+- [ ] **QT-02**: Support True/False type with fixed 2 options
+- [ ] **QT-03**: Support Short Answer type with no options (manual grading)
+- [ ] **QT-04**: Support Code Snippet type with code block and language selection
+- [ ] **QT-05**: Each question has marks/points value
 
-### Calendar Views (CAL)
+### EXP — Export
 
-| ID | Requirement | Category | Status |
-|----|------------|----------|--------|
-| CAL-01 | Month view calendar display | CAL | Pending |
-| CAL-02 | Week view calendar display | CAL | Pending |
-| CAL-03 | Day view calendar display | CAL | Pending |
-| CAL-04 | Calendar navigation + Today indicator | CAL | Pending |
+- [ ] **EXP-01**: Export questions to JSON format
+- [ ] **EXP-02**: JSON export follows ExamShield import format
+- [ ] **EXP-03**: Export includes all question types and options
 
-### Event Categories (CAT)
+### PERM — Permissions
 
-| ID | Requirement | Category | Status |
-|----|------------|----------|--------|
-| CAT-01 | Events organized into categories | CAT | Pending |
-| CAT-02 | Category color coding in calendar | CAT | Pending |
-| CAT-03 | Events can be filtered by category | CAT | Pending |
-| CAT-04 | Events can be searched | CAT | Pending |
+- [ ] **PERM-01**: Only admin users can access question bank
+- [ ] **PERM-02**: Regular members cannot view or modify questions
 
-### Recurring Events (REC)
+---
 
-| ID | Requirement | Category | Status |
-|----|------------|----------|--------|
-| REC-01 | Events support weekly recurrence | REC | Pending |
-| REC-02 | System generates future instances | REC | Pending |
-| REC-03 | Series edits propagate to occurrences | REC | Pending |
+## Future Requirements (Deferred)
+
+- Quiz creation from question bank
+- Quiz taking with timed attempts
+- Randomized question pools
+- Bulk import (CSV)
+- Per-question analytics
+
+---
+
+## Out of Scope
+
+- Student quiz taking interface
+- Auto-grading functionality
+- Question categories/taxonomy
+- Version history
 
 ---
 
@@ -51,38 +54,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RSVP-01 | Phase 2 | Complete |
-| RSVP-02 | Phase 2 | Complete |
-| RSVP-03 | Phase 2 | Complete |
-| RSVP-04 | Phase 2 | Complete |
-| ATT-01 | Phase 3 | Complete |
-| ATT-02 | Phase 3 | Complete |
-| ATT-03 | Phase 3 | Complete |
-| CAL-01 | Phase 4 | Pending |
-| CAL-02 | Phase 4 | Pending |
-| CAL-03 | Phase 4 | Pending |
-| CAL-04 | Phase 4 | Pending |
-| CAT-01 | Phase 1 | Pending |
-| CAT-02 | Phase 1 | Pending |
-| CAT-03 | Phase 1 | Pending |
-| CAT-04 | Phase 1 | Pending |
-| REC-01 | Phase 5 | Complete |
-| REC-02 | Phase 5 | Complete |
-| REC-03 | Phase 5 | Complete |
+| QB-01 | — | — |
+| QB-02 | — | — |
+| QB-03 | — | — |
+| QB-04 | — | — |
+| QB-05 | — | — |
+| QT-01 | — | — |
+| QT-02 | — | — |
+| QT-03 | — | — |
+| QT-04 | — | — |
+| QT-05 | — | — |
+| EXP-01 | — | — |
+| EXP-02 | — | — |
+| EXP-03 | — | — |
+| PERM-01 | — | — |
+| PERM-02 | — | — |
 
 ---
 
-## Out of Scope
-
-| Requirement | Reason |
-|-------------|--------|
-| Event notifications | Defer to v2 |
-| Event waitlists | Defer to v2 |
-| Event collaboration/co-hosting | Defer to v2 |
-| Event check-in system | Defer to v2 |
-| iCal export | Defer to v2 |
-| Monthly recurrence patterns | Defer to v2 |
-
----
-
-*Last updated: 2026-04-25*
+*Generated: 2026-04-27*
