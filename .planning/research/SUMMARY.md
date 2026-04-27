@@ -1,262 +1,206 @@
-# Research Summary: Club Event System Enhancements
+# Project Research Summary
 
-**Project:** Club Management Event System Enhancements  
-**Synthesized:** 2026-04-25  
-**Domain:** RSVP systems, calendar integrations, recurring events in Laravel
-
----
+**Project:** SLAU CSIC Event Enhancements
+**Domain:** Question/Quiz Management in Laravel (Question Bank Module)
+**Researched:** 2026-04-27
+**Confidence:** HIGH
 
 ## Executive Summary
 
-This club management system already has a solid foundation with Event, EventRegistration, and EventRecurrence models. The codebase uses Laravel 12, Livewire v3, and follows consistent patterns: model-scoped business logic, Livewire for UI interactivity, and Filament for admin forms.
+A Question Bank module **already exists** in this codebase, implemented using standard Laravel 12 + Livewire 3 patterns with no external dependencies beyond the core framework. The module supports multiple question types (MCQ, true/false, coding), option management with correct answer marking, code block support with syntax highlighting, JSON export, and soft deletes. No new stack additions are required.
 
-**Research Recommendation:** Enhance existing infrastructure rather than adding new packages. The existing `EventRegistration` model handles RSVP tracking, and `asantibanez/livewire-calendar` provides calendar display. New additions should target `spatie/icalendar-generator` for calendar export and selective recurring event enhancements.
+For SLAU CSIC's club management system, this Question Bank module enables certification programs, member assessments, training evaluations, and knowledge checks. The existing implementation provides solid table stakes functionality, but critical architectural pitfalls exist around question type flexibility (single `is_correct` boolean breaks multi-select questions), missing taxonomy (no categories/topics), hardcoded type strings, and soft-delete scoping that could orphan questions in published exams.
 
-**Key Risk Areas:**
-- **RSVP race conditions:** Concurrent RSVPs can oversell events without proper locking
-- **Timezone handling:** DST transitions cause recurring event display errors
-- **Event payload patterns:** Passing full models to listeners causes serialization issues
-
-**Overall Confidence:** HIGH — Multiple current sources agree, existing codebase provides strong foundation.
-
----
+**Recommended approach:** Build out from the existing foundation with a phased strategy that addresses core data model issues first, then quiz functionality, then advanced features. Avoid the temptation to add bulk import before the taxonomy foundation is laid.
 
 ## Key Findings
 
-### Technology Stack (STACK.md)
+### Recommended Stack
 
-| Capability | Recommendation | Why |
-|------------|----------------|-----|
-| RSVP Management | Enhance existing `EventRegistration` | Model exists, integrates with current relationships |
-| Calendar UI | Continue `asantibanez/livewire-calendar` | Already installed and functional |
-| iCal Export | `spatie/icalendar-generator` | RFC 5545 compliant, Spatie quality |
-| Google Calendar | `spatie/laravel-google-calendar` (optional) | Simple sync if needed |
-| Recurring Events | Enhance existing `EventRecurrence` | Model exists, covers 90% of club needs |
-| RRULE parsing | `starfolksoftware/redo` (optional) | For complex patterns |
+The existing implementation uses only Laravel and Livewire — no additional packages needed. Existing technologies already in the codebase handle all required functionality.
 
-**Existing Infrastructure:**
-- `Event` model with relationships to registrations and recurrence
-- `EventRegistration` model with status enum (registered, waiting, cancelled, attended)
-- `EventRecurrence` model with pattern/interval/ends_at fields
-- `Livewire/EventCalendar` component (functional)
+**Core technologies:**
+- **Laravel 12** — Core framework (existing)
+- **Livewire 3** — Dynamic UI components (existing, handles form state and reactivity)
+- **Eloquent ORM** — Database models (existing, no package required for questions)
+- **Tailwind CSS 4** — Styling (existing)
+- **Spatie Permissions** — Role-based access control (existing in stack)
+- **Spatie Activitylog** — Audit trails (existing in stack, can extend to questions)
 
-**Installation Priority:**
-```bash
-composer require spatie/icalendar-generator  # Recommended for v1
-# Optionally: composer require spatie/laravel-google-calendar
-```
+**Optional enhancements available in existing stack:**
+- `barryvdh/laravel-dompdf` (v3.1) — PDF export for question papers
+- `maatwebsite/excel` (v3.1) — Excel import/export
+- `prismjs` (v1.30) — Syntax highlighting for code questions
 
----
+### Expected Features
 
-### Feature Landscape (FEATURES.md)
+**Must have (table stakes):**
+- **Question CRUD** — Create, read, update, delete questions (core — without this, nothing works)
+- **Question Categories** — Organize questions by subject/topic (hierarchical structure)
+- **Question Types** — MCQ, True/False, Fill-in-Blank are essential
+- **Question Bank View** — Central library with search and filter
+- **Quiz Creation** — Build assessments from question bank
+- **Quiz Taking Interface** — Student-facing quiz experience
+- **Auto-Grading** — Automatic scoring for objective questions
+- **Results/Scores** — Basic score display for students
 
-**RSVP Systems — Table Stakes:**
-- RSVP yes/no response with confirmation feedback
-- Capacity limits (hard stop on attendee count)
-- Attendee count display (X/Y spots filled)
-- Attendee list view (who's coming)
+**Should have (competitive):**
+- **Question Tags** — Flexible cross-cutting categorization beyond categories
+- **Difficulty Levels** — Easy/Medium/Hard tagging for balanced assessments
+- **Randomized Questions** — Different question sets per attempt
+- **Question Pool Quiz** — Pull X random questions from category
+- **Bulk Import** — Import questions from CSV/Excel (high complexity)
+- **Per-Question Analytics** — Correct/incorrect rates per question
 
-**RSVP Differentiators (defer to v2 unless high priority):**
-- Waitlists (auto-promote when capacity opens)
-- Plus-one support
-- QR code check-in
-- Automated reminders (7-day, night-before, day-of)
+**Defer (v2+):**
+- Essay Questions (requires manual grading)
+- Advanced Question Types (Matching, Ordering)
+- Proctoring/Video Recording
+- Full Gradebook Integration
 
-**Calendar Views — Table Stakes:**
-- Month view (primary overview)
-- Week view (operational scheduling)
-- Day view (detailed single-day)
-- Navigation + Today indicator
-- Color coding by category
+### Architecture Approach
 
-**Calendar Differentiators (defer):**
-- Year view, agenda view
-- Drag-and-drop rescheduling
-- Multi-day event display
+The module follows established SLAU CSIC patterns: Eloquent models in `app/Models/`, Livewire components for user-facing pages, and Filament Actions for admin management. The architecture mirrors the existing Event system with model-scoped business logic, relationship-based data access, and Filament-powered admin UI.
 
-**Recurring Events — Table Stakes:**
-- Weekly recurrence
-- Generate future instances
-- Edit series (change all occurrences)
-- Basic end conditions
+**Major components:**
+1. **Quiz** — Core quiz/exam entity with metadata, timing, visibility, status workflow (draft → published → archived)
+2. **QuizQuestion** — Individual question with answer validation, point weighting, explanation storage
+3. **QuizQuestionOption** — Answer options for multiple choice, supports multiple correct answers
+4. **QuizAttempt** — User quiz attempts with scoring, pass/fail determination, timeout handling
+5. **QuizAnswer** — Individual answer per question per attempt, validates against correct answer
 
-**Recurring Differentiators (defer):**
-- Monthly patterns (by day-of-month, week-of-month)
-- Exception handling (modify/cancel single instances)
-- Full RRULE support
+### Critical Pitfalls
 
----
+1. **`is_correct` as single boolean** — Breaks multi-select questions and free-response. Use `correct_answer` JSON on question model instead.
 
-### Architecture Patterns (ARCHITECTURE.md)
+2. **Hardcoded question type strings** — Adding new types requires migrations and scattered string matching. Create a `QuestionType` enum.
 
-**Current Components:**
-```
-Event → Registration + Recurrence + Calendar
-         ↓
-Livewire: EventRegistration, EventDetails, EventCalendar, MyEvents
-Admin:   EventsManagement (Filament)
-```
+3. **No topic/category taxonomy** — Questions are a flat list, filtering requires fragile `LIKE` queries. Add `question_categories` table with self-referential hierarchy.
 
-**Patterns to Follow:**
-1. **Livewire in `App\Livewire`** namespace
-2. **Model-scoped logic** (e.g., `getIsFullAttribute()`)
-3. **Filament Actions** for admin CRUD
-4. **Route model binding** via slug (`/events/{event:slug}`)
-5. **Service-free design** — use model methods, not service classes
+4. **Soft-deleting orphans exam references** — Deleted questions still appear in published exams. Always scope exam queries to `withoutTrashed()`.
 
-**Data Flow — RSVP:**
-```
-1. User visits /event/{slug}/register (authenticated)
-2. Component checks: existing registration, remaining spots, deadline
-3. User clicks Register → EventRegistration::create(status='registered')
-4. User clicks Unregister → status='cancelled'
-```
+5. **No bulk import validation** — Malformed rows fail silently with no error reporting. Return detailed import report with row-level errors.
 
-**Data Flow — Recurring (proposed):**
-```
-1. Admin creates Event + EventRecurrence (parent)
-2. Scheduled job daily: generates occurrences
-3. Each occurrence: independent registration, linked to parent
-```
+6. **No caching on question bank queries** — N+1 queries with 1000+ questions. Use query caching with cache tags.
 
----
+## Implications for Roadmap
 
-### Domain Pitfalls (PITFALLS.md)
+Based on research, suggested phase structure:
 
-**Critical Pitfalls (must prevent):**
+### Phase 1: Core Question Data Model
+**Rationale:** The existing foundation has critical schema issues that will break multi-select questions and exam integrity. Fix the data model before building features on top.
 
-| # | Pitfall | Prevention |
-|---|--------|-----------|
-| 1 | Queued listeners execute before transaction commits | Use `ShouldHandleEventsAfterCommit` |
-| 2 | RSVP race conditions (overselling) | DB uniqueness constraint + pessimistic locking |
-| 3 | DST/timezone mismatches | Use IANA IDs (`America/New_York`), test DST dates |
-| 4 | Passing entire models to event payloads | Pass IDs only, fetch fresh in listeners |
-| 5 | Model events contain business logic | Use explicit events in service layer |
+**Delivers:**
+- Question type enum with all supported types
+- `correct_answer` field on questions (flexible per type) instead of single boolean
+- Question categories with taxonomy (parent/child hierarchy)
+- Tags relationship (Spatie laravel-tags)
+- Indices on `type`, `category_id`, `user_id`
 
-**Moderate Pitfalls:**
+**Addresses:** Features from FEATURES.md — Categories, Question Types
+**Avoids:** Pitfalls 1 (is_correct schema), 2 (hardcoded types), 3 (no taxonomy)
 
-| # | Pitfall | Prevention |
-|---|--------|-----------|
-| 6 | Silent listener failures | Implement `failed()` method, monitor queue |
-| 7 | Circular event dependencies | Document event flow, add loop detection |
-| 8 | RRULE implementation complexity | Use library (`starfolksoftware/redo`), not custom |
+### Phase 2: Question Management UI
+**Rationale:** With data model fixed, build the admin interface for managing questions, options, and categories.
 
-**Phase-Specific Warnings:**
+**Delivers:**
+- CRUD Livewire components for questions with categories
+- Option ordering UI (drag-and-drop)
+- Question cloning action
+- Category management
+- Search/filter with proper taxonomy queries
+- Query optimization with eager loading and caching
 
-| Phase | Likely Pitfall | Mitigation |
-|-------|---------------|------------|
-| RSVP system | Race conditions | DB constraints + atomic ops from start |
-| Calendar display | DST/timezone | Use IANA IDs, test DST dates |
-| Event notifications | Silent failures | Implement `failed()` method |
-| Recurring events | RRULE complexity | Use library, not custom |
+**Addresses:** Features from FEATURES.md — Question CRUD, Question Bank View
+**Avoids:** Pitfalls 5 (option ordering), 7 (caching)
 
----
+### Phase 3: Quiz Functionality
+**Rationale:** Questions are organized; now build the quiz system that uses them.
 
-## Roadmap Implications
+**Delivers:**
+- Quiz model and migrations
+- Quiz creation UI (manual question selection)
+- Quiz taking interface (Livewire)
+- Question shuffling
+- Auto-grading engine (server-side)
+- Results display
+- Time limit enforcement with server validation
 
-### Suggested Phase Structure
+**Addresses:** Features from FEATURES.md — Quiz Creation, Quiz Taking, Auto-Grading, Results
+**Avoids:** Pitfall 4 (soft-delete orphaning), client-side scoring anti-pattern
 
-Based on combined research, recommend splitting into these phases:
+### Phase 4: Quiz Enhancements
+**Rationale:** Core quiz loop complete — add differentiators.
 
-### Phase 1: RSVP System Enhancements
+**Delivers:**
+- Question pool quizzes (random X from category)
+- Attempt limits
+- Negative marking
+- Hint system
+- Per-question analytics
+- Explanation/feedback post-submission
 
-**Rationale:** RSVP is core to events. Existing EventRegistration model provides foundation, but capacity logic needs hardening.
+**Addresses:** Features from FEATURES.md — Differentiators
+**Avoids:** Performance traps with proper indexing
 
-**Deliverables:**
-- Capacity limit enforcement with race condition prevention
-- Waitlist support (auto-add when full, auto-promote on cancel)
-- Attendee count display + attendee list view
-- RSVP confirmation feedback
+### Phase 5: Advanced Features (Optional)
+**Rationale:** Only if justified by usage patterns.
 
-**Pitfalls to Avoid:**
-- Race conditions — use `unique constraint (event_id, user_id)` + `SELECT FOR UPDATE`
-- Don't add payment processing (defer to v2)
+**Delivers:**
+- Bulk import with validation and error reporting
+- Question versioning
+- Export functionality (GIFT, CSV, JSON)
 
-### Phase 2: Calendar Display Enhancements
+### Phase Ordering Rationale
 
-**Rationale:** Calendar UI already works via livewire-calendar. Add views and filtering.
+- **Data model first** — Schema issues cascade. You cannot build working quiz functionality on a broken foundation.
+- **Categories before questions** — Questions need taxonomy to be organized. Defer until Phase 1.
+- **Quiz after question management** — Cannot create quizzes without questions organized in categories.
+- **Enhancements last** — Randomized questions, pools, and analytics all depend on having sufficient question volume and organized taxonomy first.
 
-**Deliverables:**
-- Week and day views (in addition to month)
-- Today indicator and navigation
-- Category color coding
-- Filter by category
+### Research Flags
 
-**Pitfalls to Avoid:**
-- DST/timezone issues — use IANA IDs for timezone storage
+Phases likely needing deeper research during planning:
+- **Phase 4 (Quiz Enhancements):** Question randomization algorithms need validation for performance at scale
+- **Phase 5 (Advanced):** Bulk import parsing edge cases, GIFT format compatibility
 
-### Phase 3: Recurring Events
-
-**Rationale:** EventRecurrence model exists but lacks generation logic. Weekly recurrence covers 90% of club needs.
-
-**Deliverables:**
-- Weekly recurrence pattern selection
-- Scheduled job to generate occurrences
-- Edit series (propagate changes)
-- Basic end conditions (date or count)
-
-**Pitfalls to Avoid:**
-- RRULE complexity — use column-based fields, not full RRULE
-- Infinite materialization — generate rolling window ($N$ days ahead)
-
-### Phase 4: Calendar Export & Reminders
-
-**Rationale:** Export and notification are common user requests.
-
-**Deliverables:**
-- iCal export (individual + series)
-- Automated reminders (configuration: 7-day, day-before)
-- Google Calendar sync (optional)
-
-**Pitfalls to Avoid:**
-- RFC 5545 violations in ICS — use spatie/icalendar-generator
-- Silent notification failures — implement `failed()` method
-
-### Phase 5: Advanced Features (if needed)
-
-**Rationale:** Differentiators that require more complexity.
-
-**Deliverables:**
-- Year/agenda calendar views
-- Plus-one support
-- QR check-in
-- Monthly recurrence patterns
-- Single-instance exceptions
-
----
+Phases with standard patterns (skip research-phase):
+- **Phase 1:** Well-understood Laravel patterns
+- **Phase 2:** Follows existing Event/Livewire conventions
+- **Phase 3:** Established quiz-taking patterns
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Existing codebase + well-maintained packages |
-| Features | HIGH | Multiple current sources agree on table stakes |
-| Architecture | HIGH | Strong existing foundation, clear patterns |
-| Pitfalls | HIGH | Well-documented from production incidents |
+| Stack | HIGH | Existing codebase with verified implementations |
+| Features | HIGH | Industry-standard patterns from Canvas/Moodle/Quiz documentation |
+| Architecture | HIGH | Follows existing SLAU CSIC patterns (Event model structure) |
+| Pitfalls | MEDIUM | Community-sourced patterns, partial existing implementation |
 
-**Gaps to Address:**
-- Need to validate calendar UI before adding FullCalendar.js (may not need it)
-- Recurring events: confirm weekly pattern sufficiency before adding RRULE
-- Confirm if Google Calendar sync is needed (optional)
+**Overall confidence:** HIGH
 
----
+### Gaps to Address
 
-## Research Flags
-
-**Needs Research During Planning:**
-- Phase 1: Race condition implementation details
-- Phase 4: ICS RFC 5545 validation requirements
-
-**Standard Patterns (no research needed):**
-- RSVP flow (existing model with enhancements)
-- Calendar basic views (livewire-calendar handles)
-- Weekly recurrence (simple column-based fields)
-
----
+- **Existing `/online/` code integration:** The research notes a partial implementation exists. Need to verify current state during Phase 1 to avoid duplicating or breaking existing code.
+- **Fill-in-Blank implementation:** This question type was mentioned in FEATURES.md but is not in existing models. Need to confirm grading approach during Phase 1.
+- **Permissions integration:** How existing Spatie permissions map to question CRUD (create/edit/delete/view).
 
 ## Sources
 
-- **Technology:** STACK.md — spatie packages (HIGH), existing codebase (HIGH)
-- **Features:** FEATURES.md — competitive analysis, best practices (HIGH)
-- **Architecture:** ARCHITECTURE.md — existing code patterns (HIGH)
-- **Pitfalls:** PITFALLS.md — production incident analysis (HIGH)
+### Primary (HIGH confidence)
+- Existing codebase — `/app/Models/QuestionBankQuestion.php`, `/app/Models/QuestionBankOption.php`
+- Existing codebase — `/app/Livewire/QuestionBank/` components
+- Existing migrations — `database/migrations/2024_01_01_000001_create_question_bank_questions_table.php`
+
+### Secondary (MEDIUM confidence)
+- Canvas LMS Question Bank documentation (2026)
+- Moodle Question Bank documentation (2025)
+- Laravel Quiz community projects — `jaygaha/laravel-ai-quiz-engine`, `harishdurga/laravel-quiz`
+
+### Tertiary (LOW confidence)
+- Community GitHub projects — patterns need validation against production usage
+
+---
+*Research completed: 2026-04-27*
+*Ready for roadmap: yes*

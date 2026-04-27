@@ -1,434 +1,178 @@
-# Technology Stack: Event RSVP, Calendar & Recurring Events
+# Stack Research: Question Bank Module
 
-**Project:** Club Management Event System Enhancements  
-**Researched:** 2026-04-25  
-**Domain:** RSVP systems, calendar integrations, recurring events in Laravel
+**Domain:** Question/Quiz Management in Laravel  
+**Researched:** 2026-04-27  
+**Confidence:** HIGH
 
 ---
 
 ## Executive Summary
 
-This club management system already has a solid foundation with Event and EventRegistration models. For enhancing RSVP functionality, calendar integrations, and recurring events, the ecosystem offers mature, well-maintained packages that integrate seamlessly with Laravel 12 and Livewire 3.
+The Question Bank module **already exists** in this codebase. It uses standard Laravel 12 + Livewire 3 patterns with no external dependencies beyond the core framework. The implementation supports multiple question types (MCQ, true/false, coding), option management with correct answer marking, code block support with syntax highlighting, JSON export, and soft deletes.
 
-**Recommended Stack:**
-
-| Capability | Primary Choice | Alternative |
-|------------|---------------|-------------|
-| RSVP Management | Custom (EventRegistration model exists) | `offload-project/laravel-invite-only` for advanced invitation handling |
-| Calendar UI | `asantibanez/livewire-calendar` (existing) | Custom FullCalendar.js integration |
-| iCal Export | `spatie/icalendar-generator` | Built-in custom implementation |
-| Google Calendar | `spatie/laravel-google-calendar` | `youngfolks/laravel-gcal-sync` for complex sync |
-| Recurring Events | `starfolksoftware/redo` | `simshaun/recurr` for RRULE parsing |
-
-**Confidence:** HIGH
-
-The existing codebase already uses `asantibanez/livewire-calendar` successfully. Recommended additions build on this foundation without disrupting existing functionality.
+**No new stack additions are required** — the existing implementation uses vanilla Laravel/Livewire patterns.
 
 ---
 
-## Core Technology Recommendations
+## Current Implementation
 
-### 1. RSVP Management
+### Technologies Already in Use
 
-**Recommendation:** Enhance existing `EventRegistration` model rather than adding packages
+| Technology | Version | Purpose | Status |
+|------------|---------|---------|--------|
+| Laravel | ^12.0 | Core framework | Existing |
+| Livewire | ^3.7 | Dynamic UI components | Existing |
+| MySQL/SQLite | - | Database | Existing |
+| Tailwind CSS | ^4.x | Styling | Existing |
+| PHP | ^8.2 | Runtime | Existing |
 
-| Aspect | Recommendation | Why |
-|--------|--------------|-----|
-|Status tracking|Use existing `EventRegistration::class` with status enum|Boilerplate for club events: registered, waiting, cancelled |
-|Waitlist|Add `waitlist_position` column to existing table|Prevents need for separate model |
-|Bulk RSVP|Build on existing `EventRegistration` relationship|Leverages existing Eloquent relationships |
-|Reminders|Use Laravel notifications + scheduled commands|Custom implementation gives full control |
+### Question Bank Models
 
-**Existing Infrastructure (already in codebase):**
+| Model | Purpose | Relationships |
+|-------|---------|---------------|
+| `QuestionBankQuestion` | Main question entity | HasMany → `QuestionBankOption`, BelongsTo → `User` |
+| `QuestionBankOption` | Answer options for questions | BelongsTo → `QuestionBankQuestion` |
 
-```php
-// app/Models/EventRegistration.php exists
-// Event -> registrations() relationship exists
+### Current Database Schema
 
-// Recommended extensions:
-$fillable = [
-    'event_id',
-    'user_id', 
-    'status', // 'registered', 'waiting', 'cancelled', 'attended'
-    'registered_at',
-    'attended_at',
-    'waitlist_position',
-    'notes',
-];
-```
+**`question_bank_questions` table:**
 
-**RSVP Status Flow:**
+- `id` (bigint)
+- `user_id` (foreign key → users, nullable, cascade delete)
+- `type` (string) — question type (mcq, true_false, coding)
+- `question_text` (text)
+- `code_block` (text, nullable) — for coding questions
+- `code_language` (string, nullable) — programming language
+- `marks` (integer, default 1)
+- `explanation` (text, nullable) — answer explanation
+- `created_at`, `updated_at`
+- `deleted_at` (soft deletes)
 
-```
-Registered → Attended (on check-in)
-          → Cancelled (user or admin)
-          → Waiting (if event full, auto-promoted)
-```
+**`question_bank_options` table:**
 
-**Alternative Package — Only if Invitations Required:**
+- `id` (bigint)
+- `question_id` (foreign key → question_bank_questions, cascade delete)
+- `option_text` (text)
+- `is_correct` (boolean)
+- `order` (integer)
 
-If the system needs token-based invitation RSVPs (not member-based), consider:
+### Livewire Components
 
-```bash
-composer require offload-project/laravel-invite-only
-```
+| Component | Route | Purpose |
+|-----------|-------|---------|
+| `QuestionBank\Index` | `/question-bank` | List, search, filter, delete |
+| `QuestionBank\Create` | `/question-bank/create` | Create new questions |
+| `QuestionBank\Edit` | `/question-bank/{question}/edit` | Edit existing questions |
 
-- Polymorphic invitations (attach to any model)
-- Bulk invitations with partial failure
-- Status tracking: pending, accepted, declined, expired
-- Scheduled reminders via Artisan command
-- Events fired for all lifecycle changes
-- Requires: PHP 8.2+, Laravel 11/12
+### Controller
 
-**Not recommended for typical club RSVP use —** The existing `EventRegistration` model with user associations is more appropriate.
+| Controller | Method | Purpose |
+|------------|--------|---------|
+| `QuestionBankExportController` | `export()` | JSON export for external systems |
 
 ---
 
-### 2. Calendar UI / Display
+## Question Types Supported
 
-**Recommendation:** Continue using existing `asantibanez/livewire-calendar`
+| Type | Storage | Options | Code Block | Notes |
+|------|---------|---------|------------|-------|
+| `mcq` | question_text | Multiple, one+ correct | Optional | Standard multiple choice |
+| `true_false` | question_text | Two options | No | Boolean questions |
+| `coding` | question_text | Test cases as options | Required | Code with language |
 
-| Package | Version | Purpose | Status |
-|---------|---------|---------|--------|
-| `asantibanez/livewire-calendar` | Latest | Calendar grid view with event display | Already installed |
-| `fullcalendar/fullcalendar` | ^6.x | FullCalendar.js for advanced views | Optional enhancement |
+---
 
-**Current Implementation:**
+## No New Dependencies Required
 
-The codebase already uses `asantibanez/livewire-calendar`:
+The Question Bank module uses **only Laravel and Livewire** — no additional packages needed:
 
-```php
-// app/Livewire/EventCalendar.php - functional
-// Loads public events, handles clicks
-// Custom event creation/update
-```
+- **No package required** for question management (standard Eloquent)
+- **No package required** for search (Livewire query string + Eloquent where)
+- **No package required** for export (native JSON response)
+- **No package required** for forms (standard Livewire form handling)
+- **No package required** for validation (Laravel Form Requests or inline rules)
 
-**Recommended Enhancements:**
+---
+
+## Potential Enhancements (Optional)
+
+If you want to extend the Question Bank module later, these are optional:
 
 | Enhancement | Package | When to Use |
-|-------------|---------|------------|
-| Multiple calendars | FullCalendar.js | Need week/month/day/agenda views |
-| Drag-and-drop | FullCalendar.js | Need event rescheduling UI |
-| Resource scheduling | FullCalendar.js | Multiple rooms/instructors |
-
-**FullCalendar.js Integration (if needed):**
-
-```bash
-npm install @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
-```
-
-```php
-// Livewire component with FullCalendar
-public function render()
-{
-    return view('livewire.calendar-full', [
-        'events' => $this->events->map(fn($e) => [
-            'id' => $e->id,
-            'title' => $e->title,
-            'start' => $e->start_date,
-            'end' => $e->end_date,
-            'color' => $this->getEventColor($e->type),
-        ]),
-    ]);
-}
-```
-
-**Confidence:** MEDIUM — FullCalendar.js adds significant JS complexity. Only upgrade if current Livewire calendar insufficient.
+|-------------|---------|-------------|
+| PDF export | `barryvdh/laravel-dompdf` | Already installed (v3.1) |
+| Excel import/export | `maatwebsite/excel` | Already installed (v3.1) |
+| Syntax highlighting | `prismjs` | Already installed (v1.30) |
+| Code execution | Sandboxed runner (custom) | For coding question validation |
+| Quiz attempts | New model | Track user attempts |
+| Tagging | `spatie/laravel-tags` | Categorize questions |
 
 ---
 
-### 3. Calendar Export (iCal)
+## Integration Points
 
-**Recommendation:** Use `spatie/icalendar-generator` for RFC 5545 compliant exports
+### With Existing Modules
 
-| Package | Version | Purpose | When to Use |
-|---------|---------|---------|----------|
-| `spatie/icalendar-generator` | ^3.x | Generate .ics files |
-| `spatie/laravel-google-calendar` | ^3.x | Google Calendar API |
+| Module | Integration | Status |
+|--------|-------------|--------|
+| Users | `QuestionBankQuestion.user_id` → creator tracking | Implemented |
+| Activity Log | Spatie (already on User model) | Can extend |
+| Filament Admin | Can add Question Bank resource | Optional |
+| Export | JSON format (toExamShieldFormat) | Implemented |
 
-**Install iCal Generator:**
-
-```bash
-composer require spatie/icalendar-generator
-```
-
-**Simple Export:**
+### Routes
 
 ```php
-use Spatie\IcalendarGenerator\Components\Calendar;
-use Spatie\IcalendarGenerator\Components\Event;
-
-$calendar = Calendar::create('Club Events')
-    ->event(Event::create()
-        ->startDate($event->start_date)
-        ->endDate($event->end_date)
-        ->title($event->title)
-        ->description($event->description)
-        ->address($event->location)
-    );
-
-return response($calendar->get())
-    ->header('Content-Type', 'text/calendar; charset=utf-8')
-    ->header('Content-Disposition', 'attachment; filename="events.ics"');
-```
-
-**Recurring Event Export:**
-
-```php
-use Spatie\IcalendarGenerator\Components\Event;
-use Spatie\IcalendarGenerator\Enums\RecurrenceRule;
-
-$calendar = Calendar::create('Weekly Meeting')
-    ->event(Event::create()
-        ->startDate($event->start_date)
-        ->endDate($event->end_date)
-        ->title($event->title)
-        ->recurrenceRule(RecurrenceRule::create()
-            ->freq('WEEKLY')
-            ->interval(1)
-            ->until($event->recurrence->ends_at)
-            ->byDay(['MO']) // Monday
-        )
-    );
-```
-
-**Confidence:** HIGH — Spatie packages are well-maintained, integrate cleanly.
-
----
-
-### 4. Google Calendar Integration
-
-**Recommendation:** Use `spatie/laravel-google-calendar` for basic sync
-
-| Package | Version | Auth | Complexity |
-|---------|---------|------|-----------|
-| `spatie/laravel-google-calendar` | ^3.x | Service Account or OAuth2 | Simple |
-
-**Install:**
-
-```bash
-composer require spatie/laravel-google-calendar
-php artisan vendor:publish --provider="Spatie\GoogleCalendar\GoogleCalendarServiceProvider"
-```
-
-**Configuration (.env):**
-
-```env
-GOOGLE_CALENDAR_SERVICE_ACCOUNT credentials.json path
-GOOGLE_CALENDAR_ID=calendar-id@example.com
-```
-
-**Basic Usage:**
-
-```php
-use Spatie\GoogleCalendar\Event;
-
-$event = Event::create()
-    ->name('Club Meeting')
-    ->startDate(Carbon::parse('tomorrow 7pm'))
-    ->endDate(Carbon::parse('tomorrow 9pm'))
-    ->address('Club House')
-    ->save();
-```
-
-**Limitation (from official docs):**
-
-> Recurring events cannot be managed properly with this package. If you stick to creating events with a name and a date you should be fine.
-
-**For Advanced Sync (per-user OAuth, recurring events, webhooks):**
-
-Use `youngfolks/laravel-gcal-sync` instead:
-
-```bash
-composer require youngfolks/laravel-gcal-sync
-```
-
-Features:
-- Per-user OAuth 2.0 token storage
-- Incremental sync via `syncToken`
-- Webhook push notifications
-- Recurring event expansion with exceptions
-- Conflict resolution strategies
-
-**Confidence:** MEDIUM — Basic sync works well. Complex sync (recurring events, two-way) adds significant complexity.
-
----
-
-### 5. Recurring Events
-
-**Recommendation:** Choose based on complexity needed
-
-| Approach | Package | Complexity | Use Case |
-|----------|---------|------------|----------|
-| Simple (existing) | Custom model + RRULE | Low | Weekly/monthly club meetings |
-| Medium | `starfolksoftware/redo` | Medium | Multiple recurrence patterns |
-| Complex (RRULE full) | `simshaun/recurr` | High | RFC 5545 RRULE parsing |
-
-**Current Implementation (already exists):**
-
-The codebase already has `EventRecurrence` model:
-
-```php
-// app/Models/EventRecurrence.php
-protected $fillable = [
-    'event_id',
-    'pattern', // 'weekly', 'biweekly', 'monthly'
-    'interval',
-    'ends_at',
-];
-
-// Helper methods:
-isWeekly(), isBiweekly(), isMonthly()
-```
-
-This covers 90% of club meeting needs.
-
-**Enhanced Approach 1: starfolksoftware/redo (Recommended for better patterns)**
-
-```bash
-composer require starfolksoftware/redo
-```
-
-```php
-use StarfolkSoftware\Redo\Recurs;
-
-class Meeting extends Model
-{
-    use Recurs;
-}
-
-// Create recurrence:
-$meeting->makeRecurrable('WEEKLY', 1, now(), $endsAt);
-
-// Query:
-$meeting->recurrences(); // All occurrences
-$meeting->nextRecurrence(); // Next occurrence
-$meeting->recurrenceIsActive(); // Boolean
-```
-
-**Enhanced Approach 2: spatie/icalendar-generator (for iCal export)**
-
-When combined with iCal export, use RRULE:
-
-```php
-use Spatie\IcalendarGenerator\Enums\RecurrenceRule;
-
-$rule = RecurrenceRule::create()
-    ->freq('WEEKLY')
-    ->interval(2) // Biweekly
-    ->until($endsAt)
-    ->byDay(['MO', 'WE']); // Monday, Wednesday
-```
-
-**Approach 3: simshaun/recurr (Full RRULE parsing)**
-
-```bash
-composer require simshaun/recurr
-```
-
-```php
-use Recurr\Rule;
-use Recurr\Transformer\ArrayTransformer;
-
-$rule = new Rule('FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;UNTIL=20260630', $startDate);
-
-$transformer = new ArrayTransformer();
-$occurrences = $transformer->transform($rule);
-
-// Contains DateTime objects
-foreach ($occurrences as $occurrence) {
-    echo $occurrence->getStart()->format('Y-m-d H:i');
-}
-```
-
-**Database Schema Recommendation:**
-
-Based on existing `EventRecurrence` model, enhance with:
-
-```php
-// Schema for recurrence_patterns table
-Schema::create('recurrence_patterns', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-    $table->string('rrule')->nullable(); // Full RRULE for complex
-    $table->string('pattern'); // 'daily', 'weekly', 'monthly', 'yearly'
-    $table->integer('interval')->default(1);
-    $table->json('by_day')->nullable(); // ['MO', 'WE', 'FR']
-    $table->json('by_month_day')->nullable(); // [1, 15]
-    $table->date('starts_at');
-    $table->date('ends_at')->nullable();
-    $table->integer('occurrences')->nullable(); // Limit count
-    $table->timestamps();
+Route::middleware(['auth'])->group(function () {
+    Route::get('/question-bank', Index::class)->name('question-bank.index');
+    Route::get('/question-bank/create', Create::class)->name('question-bank.create');
+    Route::get('/question-bank/{question}/edit', Edit::class)->name('question-bank.edit');
+    Route::get('/question-bank/export', [QuestionBankExportController::class, 'export'])->name('question-bank.export');
 });
 ```
 
-**Storage Strategy:**
+---
 
-Use **hybrid approach** (from research on efficient storage):
+## Security Considerations
 
-1. Store RRULE/rrule in `recurrence_patterns` table
-2. Precompute next 30-60 days of instances in separate table
-3. Query precomputed instances for fast calendar display
-4. Generate on-demand for date ranges beyond window
+Current implementation includes:
 
-This balances storage with query performance.
+- **Auth required** — All routes behind `auth` middleware
+- **Soft deletes** — Questions can be restored
+- **Creator tracking** — `user_id` foreign key
+- **Mass assignment protection** — `$fillable` on models
 
 ---
 
-## Alternative Considerations
+## Testing
 
-| Category | Considered | Why Not (or When) |
-|----------|------------|-------------------|
-| Full event SaaS | Eventmie Pro | Overkill for club use, costs $69-$999 |
-| RSVP SaaS | devwaleh/rsvp-app | Use existing custom implementation |
-| Google Sync | spatie (basic) | Use for simple sync only |
-| Recurring | laravel-shift/laravel-recurring-models | New package (2025), less battle-tested |
-| Calendar UI | epaginator/calendar | Less active than livewire-calendar |
+| Test Type | Location | Status |
+|-----------|----------|--------|
+| Unit | `tests/Unit/Models/` | Can add |
+| Feature | `tests/Feature/` | Can add |
+| Browser | `tests/Browser/` | Optional |
 
 ---
 
-## Recommended Installation
+## Version Compatibility
 
-**Minimal additions for enhanced events:**
-
-```bash
-# For iCal export (recommended)
-composer require spatie/icalendar-generator
-
-# Optional: Google Calendar sync (if needed)
-composer require spatie/laravel-google-calendar
-```
-
-**Optional upgrades (if current calendar insufficient):**
-
-```bash
-# FullCalendar.js for advanced UI
-npm install @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
-```
-
----
-
-## Integration with Existing Codebase
-
-**Compatibility Checklist:**
-
-| Existing Component | Integration Point | Status |
-|------------------|---------------|--------|
-| `Event` model | Use existing, add recurrence | Compatible |
-| `EventRecurrence` model | Enhance with RRULE support | Compatible |
-| `EventRegistration` model | Add waitlist, status flow | Compatible |
-| `Livewire/EventCalendar` | Works with existing | Compatible |
-| `asantibanez/livewire-calendar` | Already installed | Compatible |
+| Package | Version | Compatible |
+|---------|---------|------------|
+| PHP | ^8.2 | ✓ |
+| Laravel | ^12.0 | ✓ |
+| Livewire | ^3.7 | ✓ |
+| Tailwind CSS | ^4.x | ✓ |
 
 ---
 
 ## Sources
 
-- [spatie/laravel-google-calendar](https://github.com/spatie/laravel-google-calendar) — HIGH (official)
-- [spatie/icalendar-generator](https://github.com/spatie/icalendar-generator) — HIGH (official)
-- [offload-project/laravel-invite-only](https://github.com/offload-project/laravel-invite-only) — MEDIUM (new, 2025)
-- [youngfolks/laravel-gcal-sync](https://github.com/youngfolks/laravel-gcal-sync) — MEDIUM (advanced sync)
-- [starfolksoftware/redo](https://github.com/starfolksoftware/redo) — MEDIUM (well-maintained)
-- [simshaun/recurr](https://github.com/simshaun/recurr) — MEDIUM (RFC 5545)
-- [asantibanez/livewire-calendar](https://github.com/asantibanez/livewire-calendar) — HIGH (existing)
-- [Calendar Recurring Events database storage](https://www.codegenes.net/blog/calendar-recurring-repeating-events-best-storage-method/) — MEDIUM (pattern reference)
+- Existing codebase — `/app/Models/QuestionBankQuestion.php`
+- Existing codebase — `/app/Models/QuestionBankOption.php`
+- Existing codebase — `/app/Livewire/QuestionBank/`
+- Existing codebase — `/database/migrations/2024_01_01_000001_create_question_bank_questions_table.php`
+
+---
+
+*Stack research for: Question Bank Module*  
+*Researched: 2026-04-27*

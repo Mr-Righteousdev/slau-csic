@@ -1,307 +1,396 @@
-# Domain Pitfalls: Event System, RSVP, and Recurring Events
+# Pitfalls Research
 
-**Domain:** Laravel Event Systems, Event Registration (RSVP), Calendar/Recurring Events
-**Researched:** 2026-04-25
-**Confidence:** HIGH
+**Domain:** Laravel Question Bank module integration
+**Researched:** 2026-04-27
+**Confidence:** MEDIUM
 
-Critical mistakes that cause rewrites, data corruption, or production incidents.
+*Note: A partial Question Bank implementation already exists in `/online/` (models, migrations, Livewire components). This research covers pitfalls relevant to integrating and extending that module into the main SLAU CSIC application.*
 
 ---
 
 ## Critical Pitfalls
 
-### 1. Queued Listeners Execute Before Transaction Commits
+### Pitfall 1: Storing `is_correct` as a single boolean on options
 
-**What goes wrong:** Queued event listeners run immediately after the event is dispatched, not after the database transaction commits. If the transaction rolls back, the listener still executes against non-existent or reverted data.
+**What goes wrong:**
+Only one option can be correct — but MCQ questions with multiple correct answers (select-all-that-apply) silently break, and true/fill-in-the-blank questions have no correct answer field at all.
 
-**Why it happens:** Laravel queues dispatch jobs immediately. The default behavior does not wait for `DB::commit()`. This is especially problematic with model events (`created`, `updated`, `deleted`) that trigger listeners expecting the data to be persisted.
+**Why it happens:**
+The existing `online/QuestionBankOption` model uses a single `is_correct` boolean. Real exam questions need: multi-select MCQ (multiple `true` options), single-select MCQ (exactly one `true`), and free-response (no correct answer field).
 
-**Consequences:**
-- Listener attempts to process non-existent records
-- N+1 queries fail because related models do not exist
-- Email notifications sent for orders that were never placed
-- Race conditions between listeners and transaction state
+**How to avoid:**
+Use a `correct_answer` column on `QuestionBankQuestion` instead, or use `correct_answer` JSON on the question model for flexible types:
 
-**Prevention:**
-- Use `ShouldHandleEventsAfterCommit` interface on queued listeners
-- Alternatively, wrap dispatch in `DB::afterCommit()` callback
-- For critical listeners, dispatch from the controller/service after successful commit
-
-**Detection:**
 ```php
-// WRONG - listener may run before commit
-event(new OrderPlaced($order));
+// Question model — flexible per type
+protected $casts = [
+    'correct_answer' => 'array', // ['A', 'C'] for multi-select, 'B' for single
+];
+```
 
-// CORRECT - using ShouldHandleEventsAfterCommit
-class SendOrderConfirmation implements ShouldQueue, ShouldHandleEventsAfterCommit
+For option-level correctness, consider a nullable `is_correct` on options plus a `correct_answer` field on the question.
+
+**Warning signs:**
+- Questions where users expect multiple correct answers save with data loss
+- Grading logic has hardcoded `where('is_correct', true)->first()`
+- `fill_in_blank` type questions have no storage for the expected answer
+
+**Phase to address:**
+Core data model phase — question type handling.
+
+---
+
+### Pitfall 2: Hardcoded question type strings
+
+**What goes wrong:**
+`type` column stores raw strings (`'multiple_choice'`, `'true_false'`, `'fill_in_blank'`). Adding a new type requires database migrations and scattered string matching throughout the codebase.
+
+**Why it happens:**
+No enum or constants for question types. Searching for `'multiple_choice'` yields dozens of hardcoded matches.
+
+**How to avoid:**
+Create a `QuestionType` enum (PHP 8.1+ backed by strings):
+
+```php
+enum QuestionType: string
 {
-    // ...
+    case MultipleChoice = 'multiple_choice';
+    case TrueFalse = 'true_false';
+    case FillInBlank = 'fill_in_blank';
+    case ShortAnswer = 'short_answer';
+    case CodeQuestion = 'code_question';
 }
+```
 
-// OR wrap in afterCommit
-DB::transaction(function () {
-    $order = Order::create([...]);
-    event(new OrderPlaced($order));
+Use the enum everywhere — casts, factories, Livewire components, grading logic.
+
+**Warning signs:**
+- `whereIn('type', ['multiple_choice', 'single_choice'])` queries scattered across components
+- New question type requires migration and multiple file edits
+- No type validation at form submission
+
+**Phase to address:**
+Core data model phase — question type enum.
+
+---
+
+### Pitfall 3: No topic/category taxonomy for questions
+
+**What goes wrong:**
+Questions are a flat list. Filtering by topic, subject, or difficulty requires complex `LIKE` queries on `question_text`, which is slow and fragile. Reusing questions across multiple exams/assessments is impossible.
+
+**Why it happens:**
+The existing `online` migration has no taxonomy tables. Questions exist in isolation with no `category_id`, `topic_id`, or `tags` relation.
+
+**How to avoid:**
+Add a `categories` table with self-referential hierarchy (topics can have subtopics):
+
+```php
+// Migration
+Schema::create('question_categories', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('parent_id')->nullable()->constrained('question_categories');
+    $table->string('name');
+    $table->string('slug');
+    $table->timestamps();
 });
+
+// QuestionBankQuestion
+public function category(): BelongsTo
+{
+    return $this->belongsTo(QuestionCategory::class);
+}
+
+public function tags(): BelongsToMany(Tag::class);
 ```
 
----
+**Warning signs:**
+- Questions displayed in a flat paginated list with no grouping
+- Search relies on `LIKE %text%` across all questions
+- Reusing a question requires duplicating it (not linking it)
 
-### 2. Race Conditions in RSVP/Limited-Capacity Events
-
-**What goes wrong:** Multiple users RSVP simultaneously for an event with limited capacity. Without proper concurrency control, you accept more RSVPs than capacity allows (overselling) or reject valid RSVPs due to check-then-act patterns.
-
-**Why it happens:**
-- Reading capacity, checking in application code, then writing
-- Relying on database isolation (`READ_COMMITTED`) to prevent race conditions
-- Not using any locking mechanism
-- No uniqueness constraint on (event_id, user_id)
-
-**Consequences:**
-- Overselling events beyond capacity
-- Double RSVPs from same user
-- Angry users who cannot attend after confirming
-- Data integrity violations
-
-**Prevention:**
-- Add database uniqueness constraint: `unique constraint on (event_id, user_id)`
-- Use pessimistic locking (`SELECT ... FOR UPDATE`) for capacity checks
-- Use atomic database operations: `UPDATE events SET rsvp_count = rsvp_count + 1 WHERE rsvp_count < capacity`
-- For high-contention events, consider Redis-based reservation system with Lua scripts
-
-**Detection:**
-- Monitor `rsvp_count` vs `capacity` in production
-- Log and alert on oversell conditions
-- Run load tests simulating concurrent RSVPs
+**Phase to address:**
+Core data model phase — question taxonomy.
 
 ---
 
-### 3. DST and Timezone Mismatches in Recurring Events
+### Pitfall 4: Soft-deleting questions orphans exam references
 
-**What goes wrong:** Events scheduled as "every Monday at 9 AM" shift by an hour when Daylight Saving Time begins or ends. Events stored as UTC show wrong local times. Events crossing DST boundaries display incorrectly.
-
-**Why it happens:**
-- Storing events as UTC without recording the event's intended timezone
-- Using fixed offsets (`-05:00`) instead of IANA identifiers (`America/New_York`)
-- Using PHP `DateTime` without timezone awareness
-- Not expanding recurring events into specific instances for each occurrence
-
-**Consequences:**
-- Events display wrong times to users
-- DST transition days cause confusion (2 AM does not exist, or 1 AM exists twice)
-- Recurring meetings shift unexpectedly
-- Calendar export (ICS) shows incorrect times
-
-**Prevention:**
-- Always use IANA timezone identifiers (e.g., `America/New_York`, not `EST`)
-- Store the event's timezone separately from the UTC timestamp
-- Use recurrence rule (RRULE) storage, expand on read using a library like `rrule.js` or `rical/recurrence`
-- For ICS export, include proper VTIMEZONE components per RFC 5545
-- Test with dates around DST transitions (US: March 10, November 3)
-
-**Detection:**
-- User complaints about wrong event times after DST change
-- ICS files fail in Microsoft New Outlook (strict RFC 5545 validation as of 2025)
-
----
-
-### 4. Passing Entire Models to Event Payloads
-
-**What goes wrong:** Events carry full Eloquent models. When listeners serialize/unserialize (queued listeners), or when models are accessed in loops, you get N+1 queries, stale data, and serialization failures.
+**What goes wrong:**
+A soft-deleted question still appears in published exams. Grading fails silently or serves the wrong answer to students. The question bank list hides it but exam-taking code does not filter soft deletes.
 
 **Why it happens:**
-- Convenience: `$event = new MyEvent($order)` where `$order` is a full model
-- Not considering that listeners may queue, serialize, or eager-load relationships
-- Circular serialization references in relationships
+The existing `online/QuestionBankQuestion` uses `SoftDeletes`, but exam/assessment queries don't scope to `withoutTrashed()`. Students see questions that admins think are deleted.
 
-**Consequences:**
-- N+1 query problems when listeners access relationships
-- Serialization errors with unserializable properties (file handles, closures)
-- Stale data: listener operates on model state from dispatch time, not when it processes
-- Memory bloat: passing large models through event bus
+**How to avoid:**
+Always scope exam-taking queries explicitly:
 
-**Prevention:**
-- Pass only IDs or data arrays: `$event = new MyEvent(['order_id' => $order->id, 'email' => $order->user->email])`
-- Have listeners fetch models fresh: `Order::find($event->orderId)->notify()`
-- Use data transfer objects (DTOs) that contain only serializable primitives
-
-**Detection:**
-- Query logs showing repeated queries for same model
-- Serialization exceptions in queue logs
-- Memory spikes when processing events
-
----
-
-### 5. Model Events Contain Business Logic
-
-**What goes wrong:** Eloquent model events (`created`, `updated`, `deleted`) contain critical business logic. These events fire from anywhere—seeders, API imports, tests, console commands—often unexpectedly.
-
-**Why it happens:**
-- Model events are convenient: logic lives right next to the model
-- Seem like the "Laravel way" for simple hooks
-- Not realizing they fire from all contexts
-
-**Consequences:**
-- Unexpected behavior in data migrations
-- Logic runs in seeders when you only wanted test data
-- Difficult to test: cannot easily fake or suppress model events
-- Logic hidden in model, not visible to developers
-- Side effects during bulk operations
-
-**Prevention:**
-- Use explicit events: `$order->markAsPlaced()` dispatches `OrderPlaced` event
-- Keep model events for infrastructure only (logging, caching)
-- Use Service Actions or Commands for business workflows
-- Document what triggers model events
-
-**Detection:**
-- Unexpected emails during data seeding
-- Side effects running in console commands unexpectedly
-
----
-
-## Moderate Pitfalls
-
-### 6. Silent Listener Failures
-
-**What goes wrong:** Queued listeners fail but failures go unnoticed. No failed job handling, no retries, no alerting.
-
-**Why it happens:**
-- Not implementing the `failed()` method on queued listeners
-- Not monitoring the `failed_jobs` table
-- Assuming queue workers always succeed
-
-**Consequences:**
-- Users not notified of important events
-- Data inconsistencies (e.g., webhook not recorded, but order created)
-- No visibility into system health
-
-**Prevention:**
 ```php
-class SendOrderConfirmation implements ShouldQueue
+// In exam-taking Livewire component
+$questions = $exam->questions()->withoutTrashed()->get();
+```
+
+Consider a `status` field (`draft`, `published`, `archived`) as well — soft delete is for data recovery, not workflow state.
+
+**Warning signs:**
+- Deleted questions still appear in exam preview or student view
+- `SoftDeletes` trait used but `withoutTrashed()` not called in exam-taking code
+- No distinction between "hidden from bank" and "removed from exams"
+
+**Phase to address:**
+Exam/assessment integration phase — data isolation.
+
+---
+
+### Pitfall 5: Question order managed by `order` column but no reordering UX
+
+**What goes wrong:**
+Options have an `order` column but no UI for drag-and-drop or explicit ordering. Options are created in random order and displayed arbitrarily. Same for questions in exams.
+
+**Why it happens:**
+The `online/QuestionBankOption` model has an `order` column, but the Livewire create/edit components have no ordering controls. Options save in creation order.
+
+**How to avoid:**
+Add a `position` or `order` column with a drag-and-drop UI (Livewire + Alpine sort plugin). Use Spatie's `OrderableTrait` or a simple `order` integer with `saving` event to recalculate:
+
+```php
+protected static function boot()
 {
-    public function failed(OrderPlaced $event, Throwable $exception): void
-    {
-        // Log, notify, or create retry job
-        Log::error('Order confirmation failed', [
-            'order_id' => $event->orderId,
-            'error' => $exception->getMessage()
-        ]);
-    }
+    parent::boot();
+
+    static::saving(function ($option) {
+        if (empty($option->order)) {
+            $option->order = $option->where('question_id', $option->question_id)->max('order') + 1;
+        }
+    });
 }
 ```
-- Monitor failed_jobs table with health checks
-- Set appropriate retry attempts
+
+**Warning signs:**
+- Options appear in random order between page loads
+- Drag-and-drop reordering is requested after initial build
+- `orderBy('order')` in queries but no UI to change order
+
+**Phase to address:**
+Question management phase — option ordering UI.
 
 ---
 
-### 7. Circular Event Dependencies
+### Pitfall 6: No bulk import validation or error reporting
 
-**What goes wrong:** Listener A handles Event A and dispatches Event B. Listener B handles Event B and dispatches Event A. Infinite loops or stack overflow.
+**What goes wrong:**
+CSV bulk import skips malformed rows silently. Admins upload 500 questions, don't realize 47 failed, and wonder why counts don't match. No feedback on which rows failed or why.
 
 **Why it happens:**
-- Not tracking event flow
-- Complex event chains without documentation
-- Adding listeners without understanding full event graph
+Bulk import is implemented as a fire-and-forget file upload with no row-level validation feedback. The `jaygaha/laravel-ai-quiz-engine` reference project notes this explicitly.
 
-**Prevention:**
-- Document event dispatch relationships
-- Use event naming conventions: `OrderPlaced`, `UserRegistered`
-- Add loop detection in listeners if complex chains exist
+**How to avoid:**
+Return a detailed import report:
+
+```php
+// Report structure
+return [
+    'total_rows' => 500,
+    'successful' => 453,
+    'failed' => 47,
+    'errors' => [
+        ['row' => 12, 'reason' => 'Missing required field: question_text'],
+        ['row' => 34, 'reason' => 'Invalid type: expected one of...'],
+    ],
+];
+```
+
+Store failed imports as a downloadable error CSV. Use a queued job for large imports with status tracking.
+
+**Warning signs:**
+- Bulk import accepts any CSV format without validation
+- No success/failure count returned to admin after import
+- No way to see which specific rows failed
+
+**Phase to address:**
+Question management phase — bulk import with validation.
 
 ---
 
-### 8. Event Payload Changes Break Listeners
+### Pitfall 7: No caching of question bank queries
 
-**What goes wrong:** You modify an event class (add/remove properties). Existing listeners break silently because they expect specific data.
+**What goes wrong:**
+The question bank index paginates 20 questions but runs N+1 queries — each question loads its options, creator, and category separately. With 1,000+ questions, page load exceeds 2 seconds.
 
 **Why it happens:**
-- Events as classes have no contract enforcement
-- Versioning not considered
-- Listeners tightly coupled to event structure
+`QuestionBankQuestion::with('options')` is the only eager load. `creator()` and `category()` relations are loaded lazily. No caching of search/filter results.
 
-**Prevention:**
-- Treat events as immutable contracts
-- Add version field to event payloads
-- Document event structure changes
-- Use event versioning or migration listeners
+**How to avoid:**
+Use query caching with cache tags for the question bank:
+
+```php
+$questions = Cache::tags(['question-bank'])
+    ->remember("questions.page.{$page}.{$search}.{$type}", 3600, function () {
+        return QuestionBankQuestion::with(['options', 'creator', 'category'])
+            ->search($search)
+            ->byType($type)
+            ->latest()
+            ->paginate(20);
+    });
+```
+
+Invalidate cache on question create/update/delete.
+
+**Warning signs:**
+- N+1 queries visible in debug bar on question bank page
+- `explain()` on the index query shows >5 joins
+- No `select()` limiting columns to what's needed
+
+**Phase to address:**
+Question management phase — query optimization.
 
 ---
 
-### 9. RRULE Implementation Complexity
+### Pitfall 8: Code block storage without syntax or language validation
 
-**What goes wrong:** Recurring event rules (RRULE) are deceptively complex. Implementing from scratch leads to edge case bugs: BYDAY handling, INTERVAL combinations, UNTIL vs COUNT, EXDATE exceptions.
+**What goes wrong:**
+`code_block` and `code_language` columns store raw strings. No validation that `code_language` is a supported language, no syntax highlighting library integration, no escaping for HTML output.
 
 **Why it happens:**
-- RRULE specification (RFC 5545) is extensive
-- "Every second Tuesday" is `BYDAY=2TU`, not obvious
-- Edge cases like "skip DST transitions" or "except holidays"
-- Not using battle-tested libraries
+The existing `online` model stores these as plain strings with no validation rules or output handling.
 
-**Prevention:**
-- Use libraries like `rlanvin/php-rrule` or JavaScript `rrule.js`
-- Store the RRULE string directly, expand on read
-- For ICS export, generate proper VTIMEZONE components
-- Test with complex recurrence patterns
+**How to avoid:**
+Validate language against an allowlist, sanitize code blocks for HTML output, and use a client-side syntax highlighter (Prism.js is already in the stack via preline):
 
----
+```php
+// In Form Request
+Rule::in(['php', 'javascript', 'python', 'sql', 'html', 'css', 'bash', 'json'])
 
-## Minor Pitfalls
+// In Blade — escape and highlight
+<pre><code class="language-{{ $question->code_language }}">
+    {{ htmlspecialchars($question->code_block) }}
+</code></pre>
+```
 
-### 10. Over-Emitting Events
+**Warning signs:**
+- `code_language` contains arbitrary strings like `"c++"` or `"JS"` (non-standardized)
+- Code blocks rendered without HTML escaping (XSS risk)
+- No syntax highlighting library integrated for code questions
 
-**What goes wrong:** Firing events for trivial state changes that no one listens to. Adds overhead without value.
-
-**Prevention:** Only emit events that have actual listeners or planned listeners.
-
-### 11. Event Naming in Wrong Tense
-
-**What goes wrong:** Events named as actions (`CreateUser`, `UpdateOrder`) instead of past tense results (`UserCreated`, `OrderUpdated`). Leads to confusion about when event fires.
-
-**Prevention:** Use past tense: `OrderPlaced`, `PaymentReceived`, `RsvpConfirmed`.
-
-### 12. Not Caching Event Discovery
-
-**What goes wrong:** In production, Laravel scans for event-listener mappings on every request, adding overhead.
-
-**Prevention:** Run `php artisan event:cache` in deployment, `php artisan event:clear` during development.
+**Phase to address:**
+Core data model phase — code question validation.
 
 ---
 
-## Phase-Specific Warnings
+## Technical Debt Patterns
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| RSVP system implementation | Race conditions | Use DB constraints + pessimistic locking from start |
-| Calendar display | DST/timezone | Use IANA IDs, store timezone metadata, test DST dates |
-| Event notifications | Silent failures | Implement `failed()` method, monitor queue |
-| Model events refactor | Hidden business logic | Replace model events with explicit events in service layer |
-| Recurring events | RRULE complexity | Use library, not custom implementation |
-| Event testing | No isolation | Use `Event::fake()` in tests |
-| ICS export | RFC 5545 violations | Validate with strict parsers, include VTIMEZONE |
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Store `is_correct` on options as single boolean | Simple schema, easy form | Breaks multi-select questions, no free-response support | Never for a real exam system |
+| Use raw string `type` column without enum | No migration needed | String matching everywhere, hard to add types | Only in throwaway prototypes |
+| No `category_id` on questions — use `LIKE` search | No schema change | Catastrophic performance at 500+ questions | Never |
+| Skip SoftDeletes scoping in exam-taking code | "It works for admins" | Students see deleted questions | Never |
+| Bulk import with no error reporting | Faster initial build | Admin loses trust when counts don't match | Only for <50 row imports |
+| No cache on question bank queries | Simpler code | Slow at scale, DB overload | Only with <100 questions |
 
 ---
 
-## Summary
+## Integration Gotchas
 
-| Pitfall | Severity | Preventable With |
-|---------|----------|------------------|
-| Queued listeners before commit | Critical | `ShouldHandleEventsAfterCommit` |
-| RSVP race conditions | Critical | DB constraints + atomic ops |
-| DST/timezone errors | Critical | IANA IDs + recurrence library |
-| Model event business logic | Critical | Explicit events from actions |
-| Silent listener failures | Moderate | `failed()` method + monitoring |
-| Event payload changes | Moderate | Versioning + documentation |
-| RRULE complexity | Moderate | Battle-tested library |
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| Spatie permissions | No permission gates on question CRUD | Add `create questions`, `edit questions`, `delete questions` permissions and gate Livewire actions |
+| Livewire file uploads | Uploading question images without proper form encoding | Use `wire:enhance` or multipart form encoding for image uploads in Livewire |
+| Existing Events module | Duplicating permission checks manually | Extract a reusable `QuestionBankPolicy` that mirrors `EventPolicy` patterns |
+| CSIC members (Users) | Tying `creator_id` to Laravel's default User model | The existing app uses `organizer_id` on Events — follow the same `user_id` pattern consistently |
+| Filament admin panel | Building duplicate admin UI in both Filament and Livewire | Prefer Filament Resource pages for CRUD; use Livewire only for public-facing exam taking |
+
+---
+
+## Performance Traps
+
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| N+1 on options in question bank list | 20 questions → 21 queries (1 + 20 options) | `with('options')` on all list queries | >50 questions visible |
+| N+1 on creator/category in list | Each row loads creator separately | `with(['options', 'creator', 'category'])` | >100 questions |
+| Unindexed `type` filter column | Type filter queries scan full table | Add index on `type` column | >500 questions |
+| `LIKE %search%` on large question bank | Full table scan, no index use | Add full-text index or use database native search | >1,000 questions |
+| Loading all options for exam-taking | Exam with 100 questions loads 400 options | Scope options to exam context only | Large exams |
+| No pagination on exam-taking questions | Exam with 500 questions loads all at once | Paginate and lazy-load question detail | Large assessments |
+
+---
+
+## Security Mistakes
+
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Exposing correct answers to students before submission | Students see answers before completing exam | Never include `is_correct` or `correct_answer` in exam-taking query; only join for grading post-submission |
+| No rate limiting on exam submission endpoint | Automated answer scraping or brute-force grading | Apply Laravel throttle: `->middleware('throttle:5,1')` on submission endpoint |
+| Storing question answers in plain JSON without encryption | Sensitive exam content readable in DB dump | Use Laravel's `encryption()` cast on `correct_answer` column |
+| Allowing any authenticated user to create questions | Non-admin users spam the question bank | Gate CRUD with `can('create questions')` gate, not just `auth()` |
+| No audit trail on question changes | Cannot track who modified or deleted questions | Use Spatie's `LogsActivity` trait on `QuestionBankQuestion` (already in stack) |
+
+---
+
+## UX Pitfalls
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|------------------|
+| No question preview before saving | Admins save broken questions and must edit them | Add a "Preview as student" toggle in the create/edit Livewire component |
+| Options deleted in-place without confirmation | Accidental option removal with no undo | Use a soft-delete undo pattern (Livewire's `withMeta(['wire:confirm'])`) |
+| No "difficulty" or "tags" filtering in bank | Finding relevant questions is manual scroll work | Add chips/filter sidebar for category + difficulty + search |
+| Exam results show only score, not per-question review | Students don't know what they got wrong | Post-submission review shows questions, selected answers, correct answers, explanations |
+| No "clone question" action | Creating a similar question requires re-entering everything | Add "Clone" action that copies question + options to a new draft |
+
+---
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **Question creation:** Always has `type`, `question_text`, `marks` validated — verify `explanation` is also saved (students need feedback)
+- [ ] **Multiple choice:** Always has at least 2 options — verify `is_correct` count matches question type expectations (1 for single-select, ≥1 for multi-select)
+- [ ] **Fill in blank:** Always has a stored `correct_answer` — verify the grading logic handles null answers gracefully
+- [ ] **Code questions:** Always has sanitized output — verify `htmlspecialchars()` on `code_block` in Blade to prevent XSS
+- [ ] **Question bank list:** Always uses `withoutTrashed()` — verify soft-deleted questions don't appear in any view
+- [ ] **Bulk import:** Always validates required fields — verify malformed rows produce a downloadable error report
+- [ ] **Exam grading:** Always scopes questions to exam context — verify students can't access other students' questions
+- [ ] **Permissions:** Always checks `can()` gates — verify guests cannot create/edit/delete questions
+
+---
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Wrong `is_correct` schema choice | HIGH | Migration to change single boolean → array; rewrite grading logic; update all existing questions |
+| Missing question taxonomy | MEDIUM | Add `question_categories` table, write migration, backfill existing questions with `uncategorized` |
+| Orphaned exam references after soft delete | HIGH | Add `withoutTrashed()` scoping everywhere; audit all exam-taking queries |
+| No bulk import validation | LOW | Add row-level validation and error report; re-run import for failed rows |
+| Missing indexes on question bank queries | MEDIUM | Add composite index on `(type, deleted_at)`; add full-text index on `question_text` |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| `is_correct` schema design | Core data model phase | Create questions of each type; verify grading handles multi-select and free-response correctly |
+| Hardcoded type strings | Core data model phase | Add `QuestionType` enum; grep for hardcoded type strings (should return zero) |
+| Missing taxonomy | Core data model phase | Filter question bank by category; verify questions appear in correct groups |
+| Soft delete orphaning | Exam/assessment phase | Soft-delete a question used in a published exam; verify it doesn't appear to students |
+| Option ordering UX | Question management phase | Drag-reorder options; reload page; verify order persisted |
+| Bulk import validation | Question management phase | Upload CSV with bad rows; verify error report lists every failure with row number |
+| N+1 queries | Question management phase | Enable query log; load question bank page; verify ≤5 queries for 20 questions |
+| Code block XSS | Code question phase | Inject `<script>` into `code_block`; verify it's escaped in rendered output |
+| Correct answer exposure | Exam-taking phase | Inspect exam-taking network responses; verify `correct_answer` never sent to client before submission |
 
 ---
 
 ## Sources
 
-- [Laravel Events Documentation](https://laravel.com/docs/11.x/events) — HIGH confidence, official documentation
-- [Laravel Events & Listeners: Clean Patterns](https://maxw3ll.com/blog/laravel-series/laravel-events-listeners-clean-patterns-after-commit-queues-and-monitoring) — HIGH confidence, 2025 expert guide
-- [Timezone Bugs in Calendar Integration](https://add-to-calendar-pro.com/articles/timezone-bug-haunts-calendar-integration-453e1126) — MEDIUM confidence, industry analysis
-- [Building a Ticketing System: Concurrency](https://blog.devgenius.io/building-a-ticketing-system-concurrency-locks-and-race-conditions-a8e0be4be993) — MEDIUM confidence, technical deep-dive
-- [Fix waitlist race conditions - Hi.Events](https://github.com/HiEventsDev/Hi.Events/pull/1072) — HIGH confidence, real production fix
-- [Laravel Common Mistakes](https://laravel.io/articles/common-laravel-mistakes-i-see-in-production-and-how-to-avoid-them) — MEDIUM confidence, production experience
-- [DST Calendar Bugs](https://add-to-calendar-pro.com/articles/event-promotion-daylight-saving-time-calendar-bug-453e859f) — MEDIUM confidence, industry analysis
+- Community patterns from: `jaygaha/laravel-ai-quiz-engine` (GitHub, 2026-03) — AI question generation, batch import, server-enforced timers, CSV import validation
+- Community patterns from: `AmrYami/assessments` (GitHub, 2025-11) — reusable assessment module with attempt lifecycle, exposure enforcement, token-based activation
+- Community patterns from: `harishdurga/laravel-quiz` (GitHub, 2021) — flexible question types, negative marking, topic-based bank filtering
+- Community patterns from: `codezelat/laravel-mcq-exam-system` (GitHub, 2025-08) — troubleshooting guide, file upload issues, cache/session handling
+- Existing implementation in `/online/` — partial models (`QuestionBankQuestion`, `QuestionBankOption`) with SoftDeletes, basic Livewire Index
+- Existing SLAU CSIC patterns — `Event` model conventions (organizer_id, slug boot, casts, relationships), Spatie permission usage, Livewire component patterns
+- Laravel production mistakes: `laravel.io/articles/common-laravel-mistakes` — fat controllers, N+1, missing indexes, soft delete scoping, authorization
+
+---
+
+*Pitfalls research for: Laravel Question Bank module integration*
+*Researched: 2026-04-27*
