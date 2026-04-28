@@ -139,10 +139,10 @@ Plans:
 17. Admin can view all certificate-eligible members per exam
 18. All routes protected by appropriate auth and role middleware
 
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
-- [ ] 09-01-PLAN.md — Exam foundation: migrations, models, admin CRUD (Wave 1)
+- [x] 09-01-PLAN.md — Exam foundation: migrations, models, admin CRUD (Wave 1)
 - [ ] 09-02-PLAN.md — Exam questions: add from Question Bank, reorder, custom marks (Wave 1)
 - [ ] 09-03-PLAN.md — Exam attempts: timed tests, answering, results display (Wave 2)
 - [ ] 09-04-PLAN.md — Grading system: auto-grading, AI grading, admin override (Wave 3, has checkpoint)
@@ -150,13 +150,15 @@ Plans:
 
 ### Phase 10: Learning & Training - learning paths, modules, lessons, progress tracking, resource library
 
-**Goal:** [To be planned]
+**Goal:** Members can browse, enroll in, and complete training modules with progress tracking. Admins can create and manage training content.
 **Requirements**: TBD
 **Depends on:** Phase 9
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 10 to break down)
+- [x] 10-01-PLAN.md — Models + Admin CRUD (Wave 1)
+- [x] 10-02-PLAN.md — Member UI: Catalog, Detail, Learning Path (Wave 2)
+- [x] 10-03-PLAN.md — Resource Library + Progress Tracking (Wave 2)
 
 ### Phase 11: Certificate System - auto-generated certificates, PDF generation, QR verification, public verification page
 
