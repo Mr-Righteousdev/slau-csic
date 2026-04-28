@@ -105,21 +105,48 @@ Plans:
 11. Members can submit writeups for solved challenges (pending review by admin)
 12. Admins can view all CTF submissions as an audit log
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 08-01-PLAN.md — CTF foundation: migrations, models, services, admin CRUD
+- [x] 08-01-PLAN.md — CTF foundation: migrations, models, services, admin CRUD
 - [ ] 08-02-PLAN.md — CTF member UI: competition pages, flag submission, scoreboard, writeups
 
 ### Phase 9: Exams & Assessments - exam creation, question bank, timed tests, AI grading, results
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Members can take timed exams with questions from the Question Bank, with auto-grading for MCQ/TF, AI grading for short answers, and certificate eligibility on passing.
+
 **Depends on:** Phase 8
-**Plans:** 0 plans
+
+**Requirements:** EXAM-01, EXAM-02, EXAM-03, EXAM-04, EXAM-05, EQ-01, EQ-02, EQ-03, EQ-04, EQ-05, ATT-01, ATT-02, ATT-03, ATT-04, ATT-05, ATT-06, GRAD-01, GRAD-02, GRAD-03, GRAD-04, GRAD-05, RES-01, RES-02, RES-03, RES-04, CERT-01, CERT-02, CERT-03, PERM-EXAM-01, PERM-EXAM-02, PERM-EXAM-03
+
+**Success Criteria** (what must be TRUE):
+1. Admin can create exams with title, description, duration, passing score, and status
+2. Admin can edit exam details and publish/unpublish exams
+3. Admin can add questions from Question Bank to exam with custom marks
+4. Admin can reorder and remove questions within an exam
+5. Members can view available (published) exams
+6. Members can start a timed exam attempt with countdown timer
+7. Members can answer all question types (MCQ, True/False, Short Answer, Code Snippet)
+8. Exam auto-submits when timer expires
+9. MCQ and True/False answers auto-graded immediately
+10. Short answer questions sent to AI (OpenAI) for grading
+11. Total score calculated and pass/fail determined
+12. Members can view their exam results with answer breakdown
+13. Admin can view all exam submissions with scores
+14. Admin can manually adjust grades if needed
+15. Exam pass records certificate eligibility
+16. Members can see certificate eligibility status
+17. Admin can view all certificate-eligible members per exam
+18. All routes protected by appropriate auth and role middleware
+
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 9 to break down)
+- [ ] 09-01-PLAN.md — Exam foundation: migrations, models, admin CRUD (Wave 1)
+- [ ] 09-02-PLAN.md — Exam questions: add from Question Bank, reorder, custom marks (Wave 1)
+- [ ] 09-03-PLAN.md — Exam attempts: timed tests, answering, results display (Wave 2)
+- [ ] 09-04-PLAN.md — Grading system: auto-grading, AI grading, admin override (Wave 3, has checkpoint)
+- [ ] 09-05-PLAN.md — Certificate eligibility: tracking, member/admin views (Wave 3)
 
 ### Phase 10: Learning & Training - learning paths, modules, lessons, progress tracking, resource library
 
