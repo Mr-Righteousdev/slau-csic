@@ -144,20 +144,17 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin')->group(fu
     Route::get('/exams/{exam}/edit', \App\Livewire\Admin\Exams\Edit::class)->name('admin.exams.edit');
     Route::get('/exams/{exam}/questions', \App\Livewire\Admin\Exams\Questions::class)->name('admin.exams.questions');
     Route::get('/exams/{exam}/add-question', \App\Livewire\Admin\Exams\AddQuestion::class)->name('admin.exams.add-question');
-    Route::get('/exams/{exam}/submissions', \App\Livewire\Admin\Exams\Submissions::class)->name('admin.exams.submissions');
-    Route::get('/exams/attempts/{attempt}/grading', \App\Livewire\Admin\Exams\Grading::class)->name('admin.exams.grading');
-    Route::get('/exams/certificates', \App\Livewire\Admin\Exams\Certificates::class)->name('admin.exams.certificates');
 
 });
 
 // CTF MEMBER ROUTES
 Route::middleware(['auth'])->group(function () {
-    Route::get('/ctf', [CtfController::class, 'index'])->name('ctf.index');
-    Route::get('/ctf/{competition:slug}', [CtfController::class, 'show'])->name('ctf.competition');
-    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/submit', [CtfController::class, 'submit'])->name('ctf.submit');
-    Route::get('/ctf/{competition:slug}/scoreboard', [CtfController::class, 'scoreboard'])->name('ctf.scoreboard');
-    Route::get('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [CtfController::class, 'writeup'])->name('ctf.writeup');
-    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [CtfController::class, 'submitWriteup'])->name('ctf.writeup.submit');
+    Route::get('/ctf', [App\Http\Controllers\CtfController::class, 'index'])->name('ctf.index');
+    Route::get('/ctf/{competition:slug}', [App\Http\Controllers\CtfController::class, 'show'])->name('ctf.competition');
+    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/submit', [App\Http\Controllers\CtfController::class, 'submit'])->name('ctf.submit');
+    Route::get('/ctf/{competition:slug}/scoreboard', [App\Http\Controllers\CtfController::class, 'scoreboard'])->name('ctf.scoreboard');
+    Route::get('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [App\Http\Controllers\CtfController::class, 'writeup'])->name('ctf.writeup');
+    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [App\Http\Controllers\CtfController::class, 'submitWriteup'])->name('ctf.writeup.submit');
 });
 
 // FRONTEND ROUTES - Cybersecurity Club Website
