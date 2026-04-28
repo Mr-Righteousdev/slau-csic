@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -86,71 +87,19 @@ return new class extends Migration
         });
 
         // Seed default categories
-        DB::table('ctf_categories')->insert([
-            [
-                'name' => 'Web',
-                'slug' => 'web',
-                'color' => '#3b82f6',
-                'icon' => '🏴',
-                'sort_order' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Crypto',
-                'slug' => 'crypto',
-                'color' => '#8b5cf6',
-                'icon' => '🏴',
-                'sort_order' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Forensics',
-                'slug' => 'forensics',
-                'color' => '#f59e0b',
-                'icon' => '🏴',
-                'sort_order' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'PWN',
-                'slug' => 'pwn',
-                'color' => '#ef4444',
-                'icon' => '🏴',
-                'sort_order' => 4,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Reversing',
-                'slug' => 'reversing',
-                'color' => '#06b6d4',
-                'icon' => '🏴',
-                'sort_order' => 5,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'OSINT',
-                'slug' => 'osint',
-                'color' => '#10b981',
-                'icon' => '🏴',
-                'sort_order' => 6,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Misc',
-                'slug' => 'misc',
-                'color' => '#6b7280',
-                'icon' => '🏴',
-                'sort_order' => 7,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $categories = [
+            ['name' => 'Web', 'slug' => 'web', 'color' => '#3b82f6', 'icon' => '🏴', 'sort_order' => 0],
+            ['name' => 'Crypto', 'slug' => 'crypto', 'color' => '#8b5cf6', 'icon' => '🏴', 'sort_order' => 1],
+            ['name' => 'Forensics', 'slug' => 'forensics', 'color' => '#f59e0b', 'icon' => '🏴', 'sort_order' => 2],
+            ['name' => 'PWN', 'slug' => 'pwn', 'color' => '#ef4444', 'icon' => '🏴', 'sort_order' => 3],
+            ['name' => 'Reversing', 'slug' => 'reversing', 'color' => '#06b6d4', 'icon' => '🏴', 'sort_order' => 4],
+            ['name' => 'OSINT', 'slug' => 'osint', 'color' => '#10b981', 'icon' => '🏴', 'sort_order' => 5],
+            ['name' => 'Misc', 'slug' => 'misc', 'color' => '#6b7280', 'icon' => '🏴', 'sort_order' => 6],
+        ];
+
+        foreach ($categories as $category) {
+            DB::table('ctf_categories')->insert(array_merge($category, ['created_at' => now(), 'updated_at' => now()]));
+        }
     }
 
     /**
