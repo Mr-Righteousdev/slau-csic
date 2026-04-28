@@ -119,6 +119,35 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin')->group(fu
     Route::delete('/questions/{question}', \App\Livewire\QuestionBank\Index::class)->name('question-bank.destroy');
     Route::post('/questions/{question}/restore', \App\Livewire\QuestionBank\Index::class)->name('question-bank.restore');
 
+    // CTF Management
+    Route::get('/ctf-competitions', \App\Livewire\Admin\CtfCompetitions::class)->name('admin.ctf-competitions');
+    Route::get('/ctf-competitions/create', \App\Livewire\Admin\CtfCompetitionCreate::class)->name('admin.ctf-competitions.create');
+    Route::post('/ctf-competitions', \App\Livewire\Admin\CtfCompetitionCreate::class)->name('admin.ctf-competitions.store');
+    Route::get('/ctf-competitions/{competition}/edit', \App\Livewire\Admin\CtfCompetitionEdit::class)->name('admin.ctf-competitions.edit');
+    Route::put('/ctf-competitions/{competition}', \App\Livewire\Admin\CtfCompetitionEdit::class)->name('admin.ctf-competitions.update');
+    Route::delete('/ctf-competitions/{competition}', \App\Livewire\Admin\CtfCompetitions::class)->name('admin.ctf-competitions.destroy');
+    Route::get('/ctf-competitions/{competition}/challenges', \App\Livewire\Admin\CtfChallenges::class)->name('admin.ctf-challenges');
+    Route::get('/ctf-competitions/{competition}/challenges/create', \App\Livewire\Admin\CtfChallengeCreate::class)->name('admin.ctf-challenges.create');
+    Route::post('/ctf-competitions/{competition}/challenges', \App\Livewire\Admin\CtfChallengeCreate::class)->name('admin.ctf-challenges.store');
+    Route::get('/ctf-competitions/{competition}/challenges/{challenge}/edit', \App\Livewire\Admin\CtfChallengeEdit::class)->name('admin.ctf-challenges.edit');
+    Route::put('/ctf-competitions/{competition}/challenges/{challenge}', \App\Livewire\Admin\CtfChallengeEdit::class)->name('admin.ctf-challenges.update');
+    Route::delete('/ctf-competitions/{competition}/challenges/{challenge}', \App\Livewire\Admin\CtfChallenges::class)->name('admin.ctf-challenges.destroy');
+    Route::get('/ctf-categories', \App\Livewire\Admin\CtfCategories::class)->name('admin.ctf-categories');
+    Route::post('/ctf-categories', \App\Livewire\Admin\CtfCategories::class)->name('admin.ctf-categories.store');
+    Route::put('/ctf-categories/{category}', \App\Livewire\Admin\CtfCategories::class)->name('admin.ctf-categories.update');
+    Route::delete('/ctf-categories/{category}', \App\Livewire\Admin\CtfCategories::class)->name('admin.ctf-categories.destroy');
+    Route::get('/ctf-submissions', \App\Livewire\Admin\CtfSubmissions::class)->name('admin.ctf-submissions');
+
+});
+
+// CTF MEMBER ROUTES
+Route::middleware(['auth'])->group(function () {
+    Route::get('/ctf', [CtfController::class, 'index'])->name('ctf.index');
+    Route::get('/ctf/{competition:slug}', [CtfController::class, 'show'])->name('ctf.competition');
+    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/submit', [CtfController::class, 'submit'])->name('ctf.submit');
+    Route::get('/ctf/{competition:slug}/scoreboard', [CtfController::class, 'scoreboard'])->name('ctf.scoreboard');
+    Route::get('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [CtfController::class, 'writeup'])->name('ctf.writeup');
+    Route::post('/ctf/{competition:slug}/challenges/{challenge:slug}/writeup', [CtfController::class, 'submitWriteup'])->name('ctf.writeup.submit');
 });
 
 // FRONTEND ROUTES - Cybersecurity Club Website

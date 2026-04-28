@@ -664,6 +664,11 @@ class User extends Authenticatable
         return $this->hasMany(FineAppeal::class, 'reviewed_by');
     }
 
+    public function ctfSubmissions(): HasMany
+    {
+        return $this->hasMany(CtfSubmission::class);
+    }
+
     // Accessors for public display
     public function getShowEmailAttribute(): bool
     {
