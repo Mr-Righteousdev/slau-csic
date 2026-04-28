@@ -57,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/fines', \App\Livewire\MemberFinesDashboard::class)->name('members.fines');
     Route::get('/events/{event:slug}/register', EventRegistration::class)->name('events.register');
     Route::get('/my-events', MyEvents::class)->name('my-events');
+    Route::get('/exams', \App\Livewire\Exams\Index::class)->name('exams.index');
+    Route::get('/exams/{exam}/take', \App\Livewire\Exams\Take::class)->name('exams.take');
+    Route::get('/exams/attempts/{attempt}/result', \App\Livewire\Exams\Result::class)->name('exams.result');
+    Route::get('/exams/certificates', \App\Livewire\Exams\Certificates::class)->name('exams.certificates');
 
     // Teacher Routes
     Route::middleware(['can:content.view'])->group(function () {
