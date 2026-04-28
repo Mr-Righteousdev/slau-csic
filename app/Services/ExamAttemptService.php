@@ -36,7 +36,19 @@ class ExamAttemptService
             'time_remaining_seconds' => 0,
         ]);
 
-        return $this->calculateScore($attempt);
+        // Grade the attempt (MCQ/TF auto-graded, short answers via AI if enabled)
+        $gradingResult = app(ExamGradingService::class)->gradeAttempt($attempt);
+
+        // Create certificate eligibility if passed
+        if ($gradingResult['passed']) {
+            try {
+                app(CertificateService::class)->createEligibility($attempt);
+            } catch (\Exception $e) {
+                // Already has eligibility, skip
+            }
+        }
+
+        return $gradingResult;
     }
 
     public function saveAnswer(ExamAttempt $attempt, ExamQuestion $examQuestion, array $data): ExamAnswer

@@ -16,6 +16,7 @@ class ExamAttempt extends Model
         'time_remaining_seconds',
         'total_score',
         'passed',
+        'admin_notes',
     ];
 
     protected function casts(): array
