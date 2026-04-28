@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class CtfChallenge extends Model
 {
@@ -50,7 +49,7 @@ class CtfChallenge extends Model
         });
 
         static::updating(function (CtfChallenge $challenge) {
-            if (isset($challenge->flag) && !empty($challenge->flag)) {
+            if (isset($challenge->flag) && ! empty($challenge->flag)) {
                 $challenge->flag_hash = hash('sha256', $challenge->flag);
             }
         });

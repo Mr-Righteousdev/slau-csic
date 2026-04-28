@@ -24,6 +24,7 @@ class CtfScoreboardService
     {
         $scoreboard = $this->getScoreboard($competition);
         $entry = $scoreboard->firstWhere('user_id', $user->id);
+
         return $entry ? $entry['rank'] : null;
     }
 

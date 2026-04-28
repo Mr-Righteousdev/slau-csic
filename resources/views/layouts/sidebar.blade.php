@@ -251,6 +251,21 @@
                                 </span>
                             </a>
                         </li>
+
+                        <li>
+                            <a href="{{ route('question-bank.index') }}" wire:navigate class="menu-item group"
+                                :class="[
+                                    isActive('/admin/qquestions') ? 'menu-item-active' : 'menu-item-inactive',
+                                    (!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'
+                                ]">
+                                <span :class="isActive('/admin/qquestions') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.75 6A2.25 2.25 0 0 1 8 3.75h8A2.25 2.25 0 0 1 18.25 6v12A2.25 2.25 0 0 1 16 20.25H8A2.25 2.25 0 0 1 5.75 18V6Zm3 2.25v1.5h6.5v-1.5h-6.5Zm0 4h6.5v-1.5h-6.5v1.5Zm0 4h4v-1.5h-4v1.5Z" fill="currentColor"/></svg>
+                                </span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text flex items-center gap-2">
+                                    Online Classes
+                                </span>
+                            </a>
+                        </li>
                         @endhasrole
 
                         <!-- Teacher Menu Items -->

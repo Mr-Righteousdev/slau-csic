@@ -74,6 +74,7 @@
                         ['label' => 'Cabinet Voting', 'route' => 'portal.voting', 'active' => request()->routeIs('portal.voting')],
                         ['label' => 'CTF Arena', 'route' => 'portal.ctf', 'active' => request()->routeIs('portal.ctf')],
                         ['label' => 'Online Classes', 'route' => 'portal.classes', 'active' => request()->routeIs('portal.classes')],
+                        ['label' => 'Qquestions', 'route' => 'question-bank.index', 'active' => request()->routeIs('question-bank.index')],
                     ],
                 ];
             }

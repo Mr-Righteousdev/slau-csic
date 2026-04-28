@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\CtfChallenge;
 use App\Models\CtfSubmission;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class CtfService
@@ -26,7 +25,7 @@ class CtfService
         }
 
         // 2. Verify the flag
-        if (!$challenge->verifyFlag($submittedFlag)) {
+        if (! $challenge->verifyFlag($submittedFlag)) {
             // Log the wrong attempt
             $attempt = CtfSubmission::create([
                 'ctf_challenge_id' => $challenge->id,
@@ -38,6 +37,7 @@ class CtfService
                 'ip_address' => $ipAddress,
                 'submitted_at' => now(),
             ]);
+
             return ['success' => false, 'error' => 'incorrect', 'message' => 'Incorrect flag'];
         }
 
@@ -99,6 +99,7 @@ class CtfService
     {
         $data['flag_hash'] = hash('sha256', $data['flag']);
         unset($data['flag']);
+
         return CtfChallenge::create($data);
     }
 
@@ -109,6 +110,7 @@ class CtfService
             unset($data['flag']);
         }
         $challenge->update($data);
+
         return $challenge;
     }
 }
