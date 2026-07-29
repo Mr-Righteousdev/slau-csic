@@ -6,7 +6,9 @@ use App\Models\Exam;
 use App\Models\ExamQuestion;
 use App\Models\QuestionBankQuestion;
 use App\Models\User;
+use App\Notifications\ExamPublishedNotification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ExamService
 {
@@ -24,6 +26,7 @@ class ExamService
 
     public function toggleStatus(Exam $exam): string
     {
+        $wasPublished = $exam->status === 'published';
         $newStatus = match ($exam->status) {
             'draft' => 'published',
             'published' => 'archived',
@@ -32,6 +35,10 @@ class ExamService
         };
 
         $exam->update(['status' => $newStatus]);
+
+        if ($newStatus === 'published' && ! $wasPublished) {
+            $this->notifyPublished($exam);
+        }
 
         return $newStatus;
     }
@@ -78,7 +85,6 @@ class ExamService
 
         $question->delete();
 
-        // Reorder remaining questions
         $this->reorderQuestions($exam, $exam->questions()->pluck('id')->toArray());
 
         return true;
@@ -115,5 +121,17 @@ class ExamService
     public function getExamTotalMarks(Exam $exam): int
     {
         return $exam->questions->sum(fn ($eq) => $eq->effective_marks);
+    }
+
+    protected function notifyPublished(Exam $exam): void
+    {
+        try {
+            $users = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['member', 'associate']))->get();
+            foreach ($users as $user) {
+                $user->notify(new ExamPublishedNotification($exam));
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send exam published notification: '.$e->getMessage());
+        }
     }
 }

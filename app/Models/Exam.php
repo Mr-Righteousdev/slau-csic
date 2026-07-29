@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Exam extends Model
 {
-    use SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -42,6 +45,24 @@ class Exam extends Model
     public function examQuestions(): HasMany
     {
         return $this->hasMany(ExamQuestion::class, 'exam_id');
+    }
+
+    public function attempts(): HasMany
+    {
+        return $this->hasMany(ExamAttempt::class);
+    }
+
+    public function certificateEligibilities(): HasMany
+    {
+        return $this->hasMany(CertificateEligibility::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'status', 'duration_minutes', 'passing_score'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     public function scopePublished($query)

@@ -6,7 +6,9 @@ use App\Models\CertificateEligibility;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\Response;
 
 class CertificateService
 {
@@ -53,5 +55,40 @@ class CertificateService
             ->where('user_id', $user->id)
             ->where('eligible', true)
             ->get();
+    }
+
+    public function verify(string $code): ?CertificateEligibility
+    {
+        return CertificateEligibility::with(['exam', 'user', 'examAttempt'])
+            ->where('verification_code', $code)
+            ->first();
+    }
+
+    public function downloadPdf(CertificateEligibility $eligibility): Response
+    {
+        $eligibility->loadMissing(['exam', 'examAttempt', 'user']);
+
+        $verificationUrl = route('certificates.verify', $eligibility->verification_code);
+
+        $clubLogo = public_path('images/club_logo.png');
+
+        $pdf = Pdf::loadView('pdf.certificate', [
+            'user' => $eligibility->user,
+            'exam' => $eligibility->exam,
+            'score' => $eligibility->examAttempt->total_score,
+            'passedAt' => $eligibility->created_at->format('F j, Y'),
+            'certificateId' => $eligibility->certificate_id,
+            'verificationUrl' => $verificationUrl,
+            'verificationCode' => $eligibility->verification_code,
+            'clubLogo' => $clubLogo,
+        ])->setPaper([0, 0, 1056, 750]);
+
+        $filename = 'certificate-'.str($eligibility->exam->title)->slug('-').'.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 }

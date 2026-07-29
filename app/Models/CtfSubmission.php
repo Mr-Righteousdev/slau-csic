@@ -13,6 +13,7 @@ class CtfSubmission extends Model
     protected $fillable = [
         'ctf_challenge_id',
         'user_id',
+        'ctf_team_id',
         'submitted_flag',
         'is_correct',
         'points_awarded',
@@ -29,12 +30,17 @@ class CtfSubmission extends Model
 
     public function challenge(): BelongsTo
     {
-        return $this->belongsTo(CtfChallenge::class);
+        return $this->belongsTo(CtfChallenge::class, 'ctf_challenge_id');
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class);
+    }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(CtfTeam::class, 'ctf_team_id');
     }
 
     public function scopeCorrect($query)

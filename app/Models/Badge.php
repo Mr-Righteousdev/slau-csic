@@ -114,9 +114,10 @@ class Badge extends Model
 
     private function checkCtfCompleted(User $user): bool
     {
-        $count = $user->clubResourceProgress()
-            ->where('status', 'completed')
-            ->count();
+        $count = $user->ctfSubmissions()
+            ->where('is_correct', true)
+            ->distinct('ctf_challenge_id')
+            ->count('ctf_challenge_id');
 
         return $count >= $this->criteria_value;
     }
@@ -138,8 +139,9 @@ class Badge extends Model
 
     private function checkCtfScore(User $user): bool
     {
-        $totalScore = $user->clubResourceProgress()
-            ->sum('score');
+        $totalScore = $user->ctfSubmissions()
+            ->where('is_correct', true)
+            ->sum('points_awarded');
 
         return $totalScore >= $this->criteria_value;
     }

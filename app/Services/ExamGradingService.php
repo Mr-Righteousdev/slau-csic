@@ -27,17 +27,11 @@ class ExamGradingService
             switch ($question->type) {
                 case 'multiple_choice':
                 case 'true_false':
+                case 'code_snippet':
                     $this->gradeMcq($answer);
                     break;
                 case 'short_answer':
                     $this->gradeShortAnswer($answer);
-                    break;
-                case 'code_snippet':
-                    // For now, set null (manual grading required)
-                    $answer->update([
-                        'is_correct' => null,
-                        'marks_awarded' => 0,
-                    ]);
                     break;
             }
 

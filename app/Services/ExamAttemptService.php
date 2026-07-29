@@ -7,52 +7,63 @@ use App\Models\ExamAnswer;
 use App\Models\ExamAttempt;
 use App\Models\ExamQuestion;
 use App\Models\User;
+use App\Notifications\ExamGradedNotification;
+use Illuminate\Support\Facades\Log;
 
 class ExamAttemptService
 {
     public function startAttempt(Exam $exam, User $user): ExamAttempt
     {
-        // Check if user already has an attempt
-        $existingAttempt = ExamAttempt::where('exam_id', $exam->id)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if ($existingAttempt) {
-            return $existingAttempt;
-        }
-
-        return ExamAttempt::create([
-            'exam_id' => $exam->id,
-            'user_id' => $user->id,
-            'started_at' => now(),
-            'time_remaining_seconds' => $exam->duration_minutes * 60,
-        ]);
+        return ExamAttempt::firstOrCreate(
+            ['exam_id' => $exam->id, 'user_id' => $user->id],
+            [
+                'started_at' => now(),
+                'time_remaining_seconds' => $exam->duration_minutes * 60,
+            ],
+        );
     }
 
-    public function submitAttempt(ExamAttempt $attempt): array
+    public function submitAttempt(ExamAttempt $attempt, bool $checkTimer = true): array
     {
+        if ($checkTimer && $this->isExpired($attempt)) {
+            $attempt->update([
+                'submitted_at' => now(),
+                'time_remaining_seconds' => 0,
+            ]);
+
+            $gradingResult = app(ExamGradingService::class)->gradeAttempt($attempt);
+
+            if ($gradingResult['passed']) {
+                $this->handleCertificateEligibility($attempt);
+            }
+
+            $this->sendGradedNotification($attempt);
+
+            return $gradingResult;
+        }
+
         $attempt->update([
             'submitted_at' => now(),
             'time_remaining_seconds' => 0,
         ]);
 
-        // Grade the attempt (MCQ/TF auto-graded, short answers via AI if enabled)
         $gradingResult = app(ExamGradingService::class)->gradeAttempt($attempt);
 
-        // Create certificate eligibility if passed
         if ($gradingResult['passed']) {
-            try {
-                app(CertificateService::class)->createEligibility($attempt);
-            } catch (\Exception $e) {
-                // Already has eligibility, skip
-            }
+            $this->handleCertificateEligibility($attempt);
         }
+
+        $this->sendGradedNotification($attempt);
 
         return $gradingResult;
     }
 
     public function saveAnswer(ExamAttempt $attempt, ExamQuestion $examQuestion, array $data): ExamAnswer
     {
+        if ($this->isExpired($attempt)) {
+            throw new \RuntimeException('Time expired for this attempt');
+        }
+
         $answer = ExamAnswer::updateOrCreate(
             [
                 'exam_attempt_id' => $attempt->id,
@@ -67,41 +78,40 @@ class ExamAttemptService
         return $answer;
     }
 
-    public function calculateScore(ExamAttempt $attempt): array
-    {
-        $totalScore = 0;
-        $totalQuestions = $attempt->answers->count();
-        $answers = [];
-
-        foreach ($attempt->answers as $answer) {
-            $totalScore += $answer->marks_awarded ?? 0;
-            $answers[] = [
-                'question_id' => $answer->exam_question_id,
-                'marks_awarded' => $answer->marks_awarded,
-                'is_correct' => $answer->is_correct,
-            ];
-        }
-
-        $passed = $attempt->exam->passing_score > 0
-            ? ($totalScore / ($attempt->exam->passing_score * $totalQuestions / 100)) >= 1
-            : false;
-
-        $attempt->update([
-            'total_score' => $totalScore,
-            'passed' => $passed,
-        ]);
-
-        return [
-            'total_score' => $totalScore,
-            'passed' => $passed,
-            'answers' => $answers,
-        ];
-    }
-
     public function getUserAttempt(Exam $exam, User $user): ?ExamAttempt
     {
         return ExamAttempt::where('exam_id', $exam->id)
             ->where('user_id', $user->id)
             ->first();
+    }
+
+    public function isExpired(ExamAttempt $attempt): bool
+    {
+        if (! $attempt->started_at) {
+            return false;
+        }
+
+        $duration = $attempt->exam->duration_minutes * 60;
+        $elapsed = now()->diffInSeconds($attempt->started_at, true);
+
+        return $elapsed >= $duration;
+    }
+
+    protected function handleCertificateEligibility(ExamAttempt $attempt): void
+    {
+        try {
+            app(CertificateService::class)->createEligibility($attempt);
+        } catch (\Exception $e) {
+            Log::warning('Certificate eligibility already exists for attempt '.$attempt->id);
+        }
+    }
+
+    protected function sendGradedNotification(ExamAttempt $attempt): void
+    {
+        try {
+            $attempt->user->notify(new ExamGradedNotification($attempt));
+        } catch (\Exception $e) {
+            Log::error('Failed to send graded notification: '.$e->getMessage());
+        }
     }
 }

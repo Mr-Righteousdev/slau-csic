@@ -117,13 +117,12 @@ class GamificationService
      */
     public function awardBadge(User $user, Badge $badge): UserBadge
     {
-        // Check if user already has this badge
         $existing = UserBadge::where('user_id', $user->id)
             ->where('badge_id', $badge->id)
-            ->exists();
+            ->first();
 
         if ($existing) {
-            throw new \RuntimeException('User already has this badge');
+            return $existing;
         }
 
         return UserBadge::create([

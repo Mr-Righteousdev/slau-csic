@@ -13,8 +13,8 @@ class AiGradingService
 
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
-        $this->model = config('services.openai.model', env('OPENAI_MODEL', 'gpt-4o-mini'));
+        $this->apiKey = config('services.openai.api_key', '');
+        $this->model = config('services.openai.model', 'gpt-4o-mini');
     }
 
     public function gradeShortAnswer(string $questionText, string $correctAnswer, string $studentAnswer, ?string $explanation = null): array

@@ -19,8 +19,10 @@
             <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
         </div>
     @endif
-        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
-            <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
+
+    @if ($errors->any())
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+            <p class="text-sm text-red-700 dark:text-red-300">{{ $errors->first() }}</p>
         </div>
     @endif
 

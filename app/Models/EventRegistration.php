@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class EventRegistration extends Model
 {
@@ -16,20 +17,34 @@ class EventRegistration extends Model
         'status',
         'rsvp_status',
         'registered_at',
+        'waitlisted_at',
         'attended_at',
         'notes',
         'custom_fields',
         'payment_completed',
+        'check_in_code',
     ];
 
     protected function casts(): array
     {
         return [
             'registered_at' => 'datetime',
+            'waitlisted_at' => 'datetime',
             'attended_at' => 'datetime',
             'custom_fields' => 'array',
             'payment_completed' => 'boolean',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($registration) {
+            if (! $registration->check_in_code) {
+                $registration->check_in_code = strtoupper(Str::random(12));
+            }
+        });
     }
 
     public function event(): BelongsTo

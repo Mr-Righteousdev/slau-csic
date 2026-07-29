@@ -24,6 +24,7 @@ class StoreMemberRegistrationRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'student_id' => ['required', 'string', 'max:100', 'unique:users,student_id'],
+            'registration_number' => ['required', 'string', 'max:50', 'unique:users,registration_number', 'regex:/^[A-Za-z]+\/\d{2}[DW]\/[A-Za-z]\/[A-Za-z]\d+$/'],
             'phone' => ['required', 'string', 'max:20'],
             'program' => ['required', 'string', 'max:100'],
             'faculty' => ['nullable', 'string', 'max:100'],
@@ -54,6 +55,9 @@ class StoreMemberRegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'registration_number.required' => 'Your university registration number is required.',
+            'registration_number.regex' => 'Format must be like BACS/24D/U/A0160 (Course/Year+Mode/Country/Intake+Number).',
+            'registration_number.unique' => 'This registration number is already registered.',
             'student_id.required' => 'A student identification number is required for club records.',
             'profile_photo.required' => 'Please upload a clear profile photo for your member account.',
             'profile_photo.image' => 'The uploaded file must be an image.',

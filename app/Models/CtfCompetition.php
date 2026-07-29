@@ -4,12 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class CtfCompetition extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -20,12 +24,29 @@ class CtfCompetition extends Model
         'status',
         'is_public',
         'max_score',
+        'event_id',
+        'allow_teams',
+        'max_team_size',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'is_public' => 'boolean',
+        'allow_teams' => 'boolean',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'status', 'is_public', 'start_date', 'end_date'])
+            ->logOnlyDirty();
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
+    }
 
     public function challenges(): HasMany
     {
@@ -45,6 +66,16 @@ class CtfCompetition extends Model
     public function writeups(): HasManyThrough
     {
         return $this->hasManyThrough(CtfWriteup::class, CtfChallenge::class);
+    }
+
+    public function teams(): HasMany
+    {
+        return $this->hasMany(CtfTeam::class);
+    }
+
+    public function hintPurchases(): HasManyThrough
+    {
+        return $this->hasManyThrough(CtfHintPurchase::class, CtfChallenge::class);
     }
 
     public function scopePublished($query)
