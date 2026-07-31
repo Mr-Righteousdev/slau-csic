@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ctf_hint_purchases', function (Blueprint $table) {
-            $table->dropUnique(['ctf_challenge_id', 'user_id']);
             $table->unique(['ctf_challenge_id', 'user_id', 'hint_tier']);
+            $table->dropUnique(['ctf_challenge_id', 'user_id']);
         });
     }
 
